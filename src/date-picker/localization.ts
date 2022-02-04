@@ -1,47 +1,11 @@
-type MonthsNames = [string, string, string, string, string, string, string, string, string, string, string, string];
-type DayNames = [string, string, string, string, string, string, string];
+import { en as calendarEn } from '../calendar/localization.js';
 
-export type LocalizedText = {
-  buttonLabel: string;
-  placeholder: string;
-  selectedDateMessage: string;
-  prevMonthLabel: string;
-  nextMonthLabel: string;
-  monthSelectLabel: string;
-  yearSelectLabel: string;
-  closeLabel: string;
-  calendarHeading: string;
-  dayNames: DayNames;
-  monthNames: MonthsNames;
-  monthNamesShort: MonthsNames;
-  locale: string | string[];
-};
-
-export const en: LocalizedText = {
+export const en = {
+  ...calendarEn,
   buttonLabel: 'Choose date',
   placeholder: 'YYYY-MM-DD',
   selectedDateMessage: 'Selected date is',
-  prevMonthLabel: 'Previous month',
-  nextMonthLabel: 'Next month',
-  monthSelectLabel: 'Month',
-  yearSelectLabel: 'Year',
   closeLabel: 'Close window',
-  calendarHeading: 'Choose a date',
-  dayNames: ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'],
-  monthNames: [
-    'January',
-    'February',
-    'March',
-    'April',
-    'May',
-    'June',
-    'July',
-    'August',
-    'September',
-    'October',
-    'November',
-    'December',
-  ],
-  monthNamesShort: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'],
-  locale: 'en-GB',
 };
+
+export type DatePickerLocalizedText = typeof en;

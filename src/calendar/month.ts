@@ -1,8 +1,8 @@
 import { html } from 'lit';
-import { LocalizedText } from './localization.js';
+import { CalendarLocalizedText } from './localization.js';
 import { DatePickerDay, DatePickerDayProps } from './day.js';
 import { getViewOfMonth, inRange, DaysOfWeek, isEqual } from '../utils/date.js';
-import { DateDisabledPredicate } from './DatePicker.js';
+import { Calendar } from './Calendar.js';
 
 function chunk<T>(array: T[], chunkSize: number): T[][] {
   const result = [];
@@ -25,12 +25,12 @@ type DatePickerMonthProps = {
   selectedDate?: Date;
   focusedDate: Date;
   labelledById: string;
-  localization: LocalizedText;
+  localization: CalendarLocalizedText;
   firstDayOfWeek: DaysOfWeek;
   min?: Date;
   max?: Date;
   dateFormatter: Intl.DateTimeFormat;
-  isDateDisabled: DateDisabledPredicate;
+  isDateDisabled: Calendar['isDateDisabled'];
   onDateSelect: DatePickerDayProps['onDaySelect'];
   onKeyboardNavigation: DatePickerDayProps['onKeyboardNavigation'];
   focusedDayRef: (element: HTMLButtonElement) => void;
@@ -61,10 +61,12 @@ export function DatePickerMonth({
             localization.dayNames,
             firstDayOfWeek,
             dayName =>
-              html`<th class="date-picker__table-header" scope="col">
-                <span aria-hidden="true">${dayName.substring(0, 2)}</span>
-                <span class="date-picker__vhidden">${dayName}</span>
-              </th>`
+              html`
+                <th class="date-picker__table-header" scope="col">
+                  <span aria-hidden="true">${dayName.substring(0, 2)}</span>
+                  <span class="date-picker__vhidden">${dayName}</span>
+                </th>
+              `
           )}
         </tr>
       </thead>

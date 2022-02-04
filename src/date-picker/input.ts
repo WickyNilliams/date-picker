@@ -1,12 +1,11 @@
 import { html, nothing } from 'lit';
-import { ref } from 'lit/directives/ref.js';
-import { LocalizedText } from './localization.js';
+import { DatePickerLocalizedText } from './localization.js';
 
 type DatePickerInputProps = {
   value: string;
   formattedValue: string;
   valueAsDate?: Date;
-  localization: LocalizedText;
+  localization: DatePickerLocalizedText;
   name: string;
   identifier: string;
   disabled: boolean;
@@ -16,8 +15,6 @@ type DatePickerInputProps = {
   onInput: (event: InputEvent) => void;
   onBlur: (event: FocusEvent) => void;
   onFocus: (event: FocusEvent) => void;
-  buttonRef: (element: HTMLButtonElement) => void;
-  inputRef: (element: HTMLInputElement) => void;
 };
 
 export function DatePickerInput({
@@ -31,8 +28,6 @@ export function DatePickerInput({
   identifier,
   disabled,
   required,
-  buttonRef,
-  inputRef,
   onInput,
   onBlur,
   onFocus,
@@ -51,16 +46,9 @@ export function DatePickerInput({
         @focus=${onFocus}
         @blur=${onBlur}
         autocomplete="off"
-        ${ref(el => inputRef(el as HTMLInputElement))}
       />
       <input type="hidden" name=${name} .value=${value} />
-      <button
-        class="date-picker__toggle"
-        @click=${onClick}
-        ?disabled=${disabled}
-        ${ref(el => buttonRef(el as HTMLButtonElement))}
-        type="button"
-      >
+      <button class="date-picker__toggle" @click=${onClick} ?disabled=${disabled} type="button">
         <span class="date-picker__toggle-icon">
           <svg aria-hidden="true" height="24" viewBox="0 0 21 21" width="24" xmlns="http://www.w3.org/2000/svg">
             <g fill="none" fill-rule="evenodd" transform="translate(2 2)">

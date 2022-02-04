@@ -1,36 +1,13 @@
 import { html, LitElement } from 'lit';
-import { property, state } from 'lit/decorators.js';
-import { ref } from 'lit/directives/ref.js';
+import { property, query, state } from 'lit/decorators.js';
 import { classMap } from 'lit/directives/class-map.js';
-import {
-  addDays,
-  startOfWeek,
-  endOfWeek,
-  setMonth,
-  setYear,
-  clamp,
-  inRange,
-  endOfMonth,
-  startOfMonth,
-  printISODate,
-  parseISODate,
-  DaysOfWeek,
-  createDate,
-} from '../utils/date.js';
+import { printISODate, parseISODate, DaysOfWeek, createDate } from '../utils/date.js';
 import { DatePickerInput } from './input.js';
-import { DatePickerMonth } from './month.js';
-import { en, LocalizedText } from './localization.js';
+import { en, DatePickerLocalizedText } from './localization.js';
 import isoAdapter, { DateAdapter } from './date-adapter.js';
 import { style } from './style.css.js';
-
-function range(from: number, to: number) {
-  const result: number[] = [];
-
-  for (let i = from; i <= to; i++) {
-    result.push(i);
-  }
-  return result;
-}
+import '../calendar/date-calendar.js';
+import { Calendar } from '../calendar/Calendar.js';
 
 const keyCode = {
   TAB: 9,
@@ -69,23 +46,21 @@ function cleanValue(input: HTMLInputElement, regex: RegExp): string {
 const DISALLOWED_CHARACTERS = /[^0-9./-]+/g;
 const TRANSITION_MS = 300;
 
-export type DateDisabledPredicate = (date: Date) => boolean;
-
 export class DatePicker extends LitElement {
   static styles = style;
   static shadowRootOptions = { ...LitElement.shadowRootOptions, delegatesFocus: true };
 
+  @query(`.date-picker__toggle`, true) private datePickerButton!: HTMLButtonElement;
+  @query(`.date-picker__input`, true) private datePickerInput!: HTMLInputElement;
+  @query(`.date-picker__close`, true) private closeButton!: HTMLButtonElement;
+  @query(`date-calendar`, true) private calendar!: Calendar;
+  @query(`[role="dialog"]`, true) private dialogWrapperNode!: HTMLElement;
+
   private inputId = 'input';
-  private monthSelectId = 'month-select';
-  private yearSelectId = 'year-select';
   private dialogLabelId = 'dialog-label';
 
-  private datePickerButton?: HTMLButtonElement;
-  private datePickerInput?: HTMLInputElement;
-  private firstFocusableElement?: HTMLElement;
-  private monthSelectNode?: HTMLElement;
-  private dialogWrapperNode?: HTMLElement;
-  private focusedDayNode?: HTMLButtonElement;
+  // private firstFocusableElement?: HTMLElement;
+  // private dialogWrapperNode?: HTMLElement;
 
   private focusTimeoutId?: ReturnType<typeof setTimeout>;
 
@@ -100,7 +75,6 @@ export class DatePicker extends LitElement {
    * better performance when formatting large number of dates. See:
    * https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Date/toLocaleDateString#Performance
    */
-  private dateFormatShort!: Intl.DateTimeFormat;
   private dateFormatLong!: Intl.DateTimeFormat;
 
   @state() activeFocus = false;
@@ -159,7 +133,7 @@ export class DatePicker extends LitElement {
    * Button labels, day names, month names, etc, used for localization.
    * Default is English.
    */
-  @property({ attribute: false }) localization: LocalizedText = en;
+  @property({ attribute: false }) localization: DatePickerLocalizedText = en;
 
   /**
    * Date adapter, for custom parsing/formatting.
@@ -173,7 +147,7 @@ export class DatePicker extends LitElement {
    * Controls which days are disabled and therefore disallowed.
    * For example, this can be used to disallow selection of weekends.
    */
-  @property() isDateDisabled: DateDisabledPredicate = () => false;
+  @property() isDateDisabled: Calendar['isDateDisabled'] = () => false;
 
   connectedCallback() {
     super.connectedCallback();
@@ -186,17 +160,12 @@ export class DatePicker extends LitElement {
 
   protected willUpdate(_changedProperties: Map<string | number | symbol, unknown>): void {
     if (_changedProperties.has('localization')) {
-      this.createDateFormatters();
+      this.dateFormatLong = new Intl.DateTimeFormat(this.localization.locale, {
+        day: 'numeric',
+        month: 'long',
+        year: 'numeric',
+      });
     }
-  }
-
-  createDateFormatters() {
-    this.dateFormatShort = new Intl.DateTimeFormat(this.localization.locale, { day: 'numeric', month: 'long' });
-    this.dateFormatLong = new Intl.DateTimeFormat(this.localization.locale, {
-      day: 'numeric',
-      month: 'long',
-      year: 'numeric',
-    });
   }
 
   /**
@@ -222,9 +191,7 @@ export class DatePicker extends LitElement {
     //
     // this was the only satisfactory combination of things to get the above to work
 
-    const isClickOutside = e
-      .composedPath()
-      .every(node => node !== this.dialogWrapperNode && node !== this.datePickerButton);
+    const isClickOutside = e.composedPath().every(node => node !== this.calendar && node !== this.datePickerButton);
 
     if (isClickOutside) {
       this.hide(false);
@@ -236,26 +203,19 @@ export class DatePicker extends LitElement {
    */
 
   /**
-   * Sets focus on the date picker's input. Use this method instead of the global `focus()`.
-   */
-  // focus() {
-  //   return this.datePickerInput?.focus();
-  // }
-
-  /**
    * Show the calendar modal, moving focus to the calendar inside.
    */
   show() {
     this.open = true;
     this.dispatchEvent(new CustomEvent('date-picker-open'));
 
-    this.setFocusedDay(parseISODate(this.value) || new Date());
+    // this.setFocusedDay(parseISODate(this.value) || new Date());
 
     if (this.focusTimeoutId) {
       clearTimeout(this.focusTimeoutId);
     }
 
-    this.focusTimeoutId = setTimeout(() => this.monthSelectNode?.focus(), TRANSITION_MS);
+    this.focusTimeoutId = setTimeout(() => this.calendar?.focus(), TRANSITION_MS);
   }
 
   /**
@@ -281,53 +241,13 @@ export class DatePicker extends LitElement {
   /**
    * Local methods.
    */
-  private enableActiveFocus = () => {
-    this.activeFocus = true;
-  };
+  // private enableActiveFocus = () => {
+  //   this.activeFocus = true;
+  // };
 
-  private disableActiveFocus = () => {
-    this.activeFocus = false;
-  };
-
-  private addDays(days: number) {
-    this.setFocusedDay(addDays(this.focusedDay, days));
-  }
-
-  private addMonths(months: number) {
-    this.setMonth(this.focusedDay.getMonth() + months);
-  }
-
-  private addYears(years: number) {
-    this.setYear(this.focusedDay.getFullYear() + years);
-  }
-
-  private startOfWeek() {
-    this.setFocusedDay(startOfWeek(this.focusedDay, this.firstDayOfWeek));
-  }
-
-  private endOfWeek() {
-    this.setFocusedDay(endOfWeek(this.focusedDay, this.firstDayOfWeek));
-  }
-
-  private setMonth(month: number) {
-    const min = setMonth(startOfMonth(this.focusedDay), month);
-    const max = endOfMonth(min);
-    const date = setMonth(this.focusedDay, month);
-
-    this.setFocusedDay(clamp(date, min, max));
-  }
-
-  private setYear(year: number) {
-    const min = setYear(startOfMonth(this.focusedDay), year);
-    const max = endOfMonth(min);
-    const date = setYear(this.focusedDay, year);
-
-    this.setFocusedDay(clamp(date, min, max));
-  }
-
-  private setFocusedDay(day: Date) {
-    this.focusedDay = clamp(day, parseISODate(this.min), parseISODate(this.max));
-  }
+  // private disableActiveFocus = () => {
+  //   this.activeFocus = false;
+  // };
 
   private toggleOpen = (e: Event) => {
     e.preventDefault();
@@ -373,111 +293,20 @@ export class DatePicker extends LitElement {
     const distY = touch.pageY - this.initialTouchY; // get vertical dist traveled
     const threshold = 70;
 
-    const isHorizontalSwipe = Math.abs(distX) >= threshold && Math.abs(distY) <= threshold;
     const isDownwardsSwipe = Math.abs(distY) >= threshold && Math.abs(distX) <= threshold && distY > 0;
 
-    if (isHorizontalSwipe) {
-      this.addMonths(distX < 0 ? 1 : -1);
-    } else if (isDownwardsSwipe) {
+    if (isDownwardsSwipe) {
       this.hide(false);
       event.preventDefault();
     }
   };
 
-  private handleNextMonthClick = (event: MouseEvent) => {
-    event.preventDefault();
-    this.addMonths(1);
+  private focusFirst = () => {
+    this.closeButton.focus();
   };
 
-  private handlePreviousMonthClick = (event: MouseEvent) => {
-    event.preventDefault();
-    this.addMonths(-1);
-  };
-
-  private handleFirstFocusableKeydown = (event: KeyboardEvent) => {
-    // this ensures focus is trapped inside the dialog
-    if (event.keyCode === keyCode.TAB && event.shiftKey) {
-      this.focusedDayNode?.focus();
-      event.preventDefault();
-    }
-  };
-
-  private handleKeyboardNavigation = (event: KeyboardEvent) => {
-    // handle tab separately, since it needs to be treated
-    // differently to other keyboard interactions
-    if (event.keyCode === keyCode.TAB && !event.shiftKey) {
-      event.preventDefault();
-      this.firstFocusableElement?.focus();
-      return;
-    }
-
-    let handled = true;
-
-    switch (event.keyCode) {
-      case keyCode.RIGHT:
-        this.addDays(1);
-        break;
-      case keyCode.LEFT:
-        this.addDays(-1);
-        break;
-      case keyCode.DOWN:
-        this.addDays(7);
-        break;
-      case keyCode.UP:
-        this.addDays(-7);
-        break;
-      case keyCode.PAGE_UP:
-        if (event.shiftKey) {
-          this.addYears(-1);
-        } else {
-          this.addMonths(-1);
-        }
-        break;
-      case keyCode.PAGE_DOWN:
-        if (event.shiftKey) {
-          this.addYears(1);
-        } else {
-          this.addMonths(1);
-        }
-        break;
-      case keyCode.HOME:
-        this.startOfWeek();
-        break;
-      case keyCode.END:
-        this.endOfWeek();
-        break;
-      default:
-        handled = false;
-    }
-
-    if (handled) {
-      event.preventDefault();
-      this.enableActiveFocus();
-    }
-  };
-
-  private handleDaySelect = (_event: MouseEvent, day: Date) => {
-    const isInRange = inRange(day, parseISODate(this.min), parseISODate(this.max));
-    const isAllowed = !this.isDateDisabled(day);
-
-    if (isInRange && isAllowed) {
-      this.setValue(day);
-      this.hide();
-    } else {
-      // for consistency we should set the focused day in cases where
-      // user has selected a day that has been specifically disallowed
-      this.setFocusedDay(day);
-    }
-  };
-
-  private handleMonthSelect = (e: Event) => {
-    const select = e.target as HTMLSelectElement;
-    this.setMonth(parseInt(select.value, 10));
-  };
-
-  private handleYearSelect = (e: Event) => {
-    const select = e.target as HTMLSelectElement;
-    this.setYear(parseInt(select.value, 10));
+  private focusLast = () => {
+    this.calendar.focus();
   };
 
   private handleInputChange = () => {
@@ -490,6 +319,11 @@ export class DatePicker extends LitElement {
     if (parsed || target.value === '') {
       this.setValue(parsed);
     }
+  };
+
+  private handleDaySelect = (event: CustomEvent<{ valueAsDate: Date }>) => {
+    this.setValue(event.detail.valueAsDate);
+    this.hide();
   };
 
   private setValue(date?: Date) {
@@ -505,30 +339,9 @@ export class DatePicker extends LitElement {
     );
   }
 
-  private processFocusedDayNode = (element: HTMLButtonElement) => {
-    this.focusedDayNode = element;
-
-    if (this.activeFocus && this.open) {
-      setTimeout(() => element.focus(), 0);
-    }
-  };
-
   render() {
     const valueAsDate = parseISODate(this.value);
     const formattedDate = valueAsDate ? this.dateAdapter.format(valueAsDate) : '';
-    const selectedYear = (valueAsDate || this.focusedDay).getFullYear();
-    const focusedMonth = this.focusedDay.getMonth();
-    const focusedYear = this.focusedDay.getFullYear();
-
-    const minDate = parseISODate(this.min);
-    const maxDate = parseISODate(this.max);
-    const prevMonthDisabled =
-      minDate != null && minDate.getMonth() === focusedMonth && minDate.getFullYear() === focusedYear;
-    const nextMonthDisabled =
-      maxDate != null && maxDate.getMonth() === focusedMonth && maxDate.getFullYear() === focusedYear;
-
-    const minYear = minDate ? minDate.getFullYear() : selectedYear - 10;
-    const maxYear = maxDate ? maxDate.getFullYear() : selectedYear + 10;
 
     return html`
       <div class="date-picker">
@@ -546,12 +359,6 @@ export class DatePicker extends LitElement {
           required: this.required,
           identifier: this.inputId,
           localization: this.localization,
-          buttonRef: element => {
-            this.datePickerButton = element;
-          },
-          inputRef: element => {
-            this.datePickerInput = element;
-          },
         })}
 
         <div
@@ -568,24 +375,12 @@ export class DatePicker extends LitElement {
           @touchstart=${this.handleTouchStart}
           @touchend=${this.handleTouchEnd}
         >
-          <div
-            class="date-picker__dialog-content"
-            @keydown=${this.handleEscKey}
-            ${ref(element => {
-              this.dialogWrapperNode = element as HTMLElement;
-            })}
-          >
-            <div class="date-picker__mobile" @focusin=${this.disableActiveFocus}>
+          <div class="date-picker__dialog-content" @keydown=${this.handleEscKey}>
+            <div tabindex="0" @focus=${this.focusLast}></div>
+
+            <div class="date-picker__mobile">
               <label class="date-picker__mobile-heading">${this.localization.calendarHeading}</label>
-              <button
-                class="date-picker__close"
-                ${ref(element => {
-                  this.firstFocusableElement = element as HTMLElement;
-                })}
-                @keydown=${this.handleFirstFocusableKeydown}
-                @click=${() => this.hide()}
-                type="button"
-              >
+              <button class="date-picker__close" @click=${() => this.hide()} type="button">
                 <svg
                   aria-hidden="true"
                   fill="currentColor"
@@ -602,139 +397,18 @@ export class DatePicker extends LitElement {
                 <span class="date-picker__vhidden">${this.localization.closeLabel}</span>
               </button>
             </div>
-            <div class="date-picker__header" onFocusin=${this.disableActiveFocus}>
-              <div>
-                <h2 id=${this.dialogLabelId} class="date-picker__vhidden" aria-live="polite" aria-atomic="true">
-                  ${this.localization.monthNames[focusedMonth]} ${this.focusedDay.getFullYear()}
-                </h2>
 
-                <label htmlFor=${this.monthSelectId} class="date-picker__vhidden">
-                  ${this.localization.monthSelectLabel}
-                </label>
-                <div class="date-picker__select">
-                  <select
-                    id=${this.monthSelectId}
-                    class="date-picker__select--month"
-                    ${ref(element => {
-                      this.monthSelectNode = element as HTMLSelectElement;
-                    })}
-                    onChange=${this.handleMonthSelect}
-                  >
-                    ${this.localization.monthNames.map(
-                      (month, i) =>
-                        html`<option
-                          key=${month}
-                          value=${i}
-                          ?selected=${i === focusedMonth}
-                          ?disabled=${!inRange(
-                            new Date(focusedYear, i, 1),
-                            minDate ? startOfMonth(minDate) : undefined,
-                            maxDate ? endOfMonth(maxDate) : undefined
-                          )}
-                        >
-                          ${month}
-                        </option>`
-                    )}
-                  </select>
-                  <div class="date-picker__select-label" aria-hidden="true">
-                    <span>${this.localization.monthNamesShort[focusedMonth]}</span>
-                    <svg
-                      fill="currentColor"
-                      xmlns="http://www.w3.org/2000/svg"
-                      width="16"
-                      height="16"
-                      viewBox="0 0 24 24"
-                    >
-                      <path
-                        d="M8.12 9.29L12 13.17l3.88-3.88c.39-.39 1.02-.39 1.41 0 .39.39.39 1.02 0 1.41l-4.59 4.59c-.39.39-1.02.39-1.41 0L6.7 10.7c-.39-.39-.39-1.02 0-1.41.39-.38 1.03-.39 1.42 0z"
-                      />
-                    </svg>
-                  </div>
-                </div>
+            <date-calendar
+              value=${this.value}
+              @calendar-change=${this.handleDaySelect}
+              min=${this.min}
+              max=${this.max}
+              first-day-of-week=${this.firstDayOfWeek}
+              .localization=${this.localization}
+              .isDateDisabled=${this.isDateDisabled}
+            ></date-calendar>
 
-                <label htmlFor=${this.yearSelectId} class="date-picker__vhidden">
-                  ${this.localization.yearSelectLabel}
-                </label>
-                <div class="date-picker__select">
-                  <select id=${this.yearSelectId} class="date-picker__select--year" onChange=${this.handleYearSelect}>
-                    ${range(minYear, maxYear).map(
-                      year => html`<option key=${year} ?selected=${year === focusedYear}>${year}</option>`
-                    )}
-                  </select>
-                  <div class="date-picker__select-label" aria-hidden="true">
-                    <span>${this.focusedDay.getFullYear()}</span>
-                    <svg
-                      fill="currentColor"
-                      xmlns="http://www.w3.org/2000/svg"
-                      width="16"
-                      height="16"
-                      viewBox="0 0 24 24"
-                    >
-                      <path
-                        d="M8.12 9.29L12 13.17l3.88-3.88c.39-.39 1.02-.39 1.41 0 .39.39.39 1.02 0 1.41l-4.59 4.59c-.39.39-1.02.39-1.41 0L6.7 10.7c-.39-.39-.39-1.02 0-1.41.39-.38 1.03-.39 1.42 0z"
-                      />
-                    </svg>
-                  </div>
-                </div>
-              </div>
-
-              <div class="date-picker__nav">
-                <button
-                  class="date-picker__prev"
-                  @click=${this.handlePreviousMonthClick}
-                  ?disabled=${prevMonthDisabled}
-                  type="button"
-                >
-                  <svg
-                    aria-hidden="true"
-                    fill="currentColor"
-                    xmlns="http://www.w3.org/2000/svg"
-                    width="21"
-                    height="21"
-                    viewBox="0 0 24 24"
-                  >
-                    <path
-                      d="M14.71 15.88L10.83 12l3.88-3.88c.39-.39.39-1.02 0-1.41-.39-.39-1.02-.39-1.41 0L8.71 11.3c-.39.39-.39 1.02 0 1.41l4.59 4.59c.39.39 1.02.39 1.41 0 .38-.39.39-1.03 0-1.42z"
-                    />
-                  </svg>
-                  <span class="date-picker__vhidden">${this.localization.prevMonthLabel}</span>
-                </button>
-                <button
-                  class="date-picker__next"
-                  @click=${this.handleNextMonthClick}
-                  ?disabled=${nextMonthDisabled}
-                  type="button"
-                >
-                  <svg
-                    aria-hidden="true"
-                    fill="currentColor"
-                    xmlns="http://www.w3.org/2000/svg"
-                    width="21"
-                    height="21"
-                    viewBox="0 0 24 24"
-                  >
-                    <path
-                      d="M9.29 15.88L13.17 12 9.29 8.12c-.39-.39-.39-1.02 0-1.41.39-.39 1.02-.39 1.41 0l4.59 4.59c.39.39.39 1.02 0 1.41L10.7 17.3c-.39.39-1.02.39-1.41 0-.38-.39-.39-1.03 0-1.42z"
-                    />
-                  </svg>
-                  <span class="date-picker__vhidden">${this.localization.nextMonthLabel}</span>
-                </button>
-              </div>
-            </div>
-            ${DatePickerMonth({
-              dateFormatter: this.dateFormatShort,
-              selectedDate: valueAsDate,
-              focusedDate: this.focusedDay,
-              onDateSelect: this.handleDaySelect,
-              onKeyboardNavigation: this.handleKeyboardNavigation,
-              labelledById: this.dialogLabelId,
-              localization: this.localization,
-              firstDayOfWeek: this.firstDayOfWeek,
-              focusedDayRef: this.processFocusedDayNode,
-              min: minDate,
-              max: maxDate,
-              isDateDisabled: this.isDateDisabled,
-            })}
+            <div tabindex="0" @focus=${this.focusFirst}></div>
           </div>
         </div>
       </div>
