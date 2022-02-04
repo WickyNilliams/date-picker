@@ -1,0 +1,123 @@
+{
+  "name": "date-picker",
+  "description": "Webcomponent date-picker following open-wc recommendations",
+  "license": "MIT",
+  "author": "date-picker",
+  "version": "0.0.0",
+  "main": "dist/src/index.js",
+  "module": "dist/src/index.js",
+  "exports": {
+    ".": "./dist/src/index.js",
+    "./date-picker.js": "./dist/src/date-picker.js"
+  },
+  "scripts": {
+    "start": "concurrently -k -n TSC,HTTP -c blue.bold,magenta.bold \"tsc -w --noEmit\" \"wds\"",
+    "build": "npm run clean && tsc && npm run analyze",
+    "clean": "rm -rf dist/",
+    "prepublish": "tsc",
+    "lint": "eslint --ext .ts,.html . --ignore-path .gitignore && prettier \"**/*.ts\" --check --ignore-path .gitignore",
+    "format": "eslint --ext .ts,.html . --fix --ignore-path .gitignore && prettier \"**/*.ts\" --write --ignore-path .gitignore",
+    "test": "tsc && wtr --coverage",
+    "test:watch": "tsc && concurrently -k -r \"tsc --watch --preserveWatchOutput\" \"wtr --watch\"",
+    "analyze": "custom-elements-manifest analyze --litelement"
+  },
+  "dependencies": {
+    "lit": "^2.0.0-rc.2"
+  },
+  "devDependencies": {
+    "@custom-elements-manifest/analyzer": "^0.5.7",
+    "@open-wc/eslint-config": "^4.3.0",
+    "@open-wc/testing": "next",
+    "@typescript-eslint/eslint-plugin": "^4.29.2",
+    "@typescript-eslint/parser": "^4.29.2",
+    "@web/dev-server": "^0.1.21",
+    "@web/dev-server-esbuild": "^0.2.16",
+    "@web/test-runner": "next",
+    "concurrently": "^5.3.0",
+    "eslint": "^7.32.0",
+    "eslint-config-prettier": "^8.3.0",
+    "husky": "^4.3.8",
+    "lint-staged": "^10.5.4",
+    "prettier": "^2.3.2",
+    "tslib": "^2.3.1",
+    "typescript": "^4.3.5"
+  },
+  "eslintConfig": {
+    "parser": "@typescript-eslint/parser",
+    "extends": [
+      "@open-wc",
+      "prettier"
+    ],
+    "ignorePatterns": [
+      "coverage",
+      "demo/index.html"
+    ],
+    "plugins": [
+      "@typescript-eslint"
+    ],
+    "rules": {
+      "no-unused-vars": "off",
+      "@typescript-eslint/no-unused-vars": [
+        "error"
+      ],
+      "import/no-unresolved": "off",
+      "import/extensions": [
+        "error",
+        "always",
+        {
+          "ignorePackages": true
+        }
+      ],
+      "import/no-extraneous-dependencies": [
+        "error",
+        {
+          "devDependencies": [
+            "**/src/**/*.test.{js,mjs,ts}",
+            "**/demo/**/*.{html,js,mjs,ts}",
+            "**/*.config.{html,js,mjs,ts}",
+            "**/*.conf.{html,js,mjs,ts}"
+          ]
+        }
+      ],
+      "no-redeclare": "off",
+      "@typescript-eslint/no-redeclare": [
+        "error"
+      ],
+      "no-shadow": "off",
+      "@typescript-eslint/no-shadow": [
+        "error"
+      ],
+      "consistent-return": "off",
+      "no-param-reassign": [
+        "error",
+        {
+          "props": false
+        }
+      ],
+      "lines-between-class-members": [
+        "error",
+        "always",
+        {
+          "exceptAfterSingleLine": true
+        }
+      ],
+      "no-plusplus": "off"
+    }
+  },
+  "prettier": {
+    "singleQuote": true,
+    "arrowParens": "avoid",
+    "printWidth": 120
+  },
+  "husky": {
+    "hooks": {
+      "pre-commit": "lint-staged"
+    }
+  },
+  "lint-staged": {
+    "*.ts": [
+      "eslint --fix",
+      "prettier --write"
+    ]
+  }
+}
