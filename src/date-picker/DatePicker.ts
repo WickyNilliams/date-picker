@@ -9,20 +9,6 @@ import { style } from './style.css.js';
 import '../calendar/date-calendar.js';
 import { Calendar } from '../calendar/Calendar.js';
 
-const keyCode = {
-  TAB: 9,
-  ESC: 27,
-  SPACE: 32,
-  PAGE_UP: 33,
-  PAGE_DOWN: 34,
-  END: 35,
-  HOME: 36,
-  LEFT: 37,
-  UP: 38,
-  RIGHT: 39,
-  DOWN: 40,
-};
-
 function cleanValue(input: HTMLInputElement, regex: RegExp): string {
   const { value } = input;
   const cursor = input.selectionStart as number;
@@ -260,7 +246,7 @@ export class DatePicker extends LitElement {
   };
 
   private handleEscKey = (event: KeyboardEvent) => {
-    if (event.keyCode === keyCode.ESC) {
+    if (event.keyCode === 27) {
       this.hide();
     }
   };

@@ -1,8 +1,62 @@
 import { html } from 'lit';
+import { classMap } from 'lit/directives/class-map.js';
+import { ifDefined } from 'lit/directives/if-defined.js';
+import { getViewOfMonth, inRange as dateInRange, DaysOfWeek, isEqual, isEqualMonth } from '../utils/date.js';
 import { CalendarLocalizedText } from './localization.js';
-import { DatePickerDay, DatePickerDayProps } from './day.js';
-import { getViewOfMonth, inRange, DaysOfWeek, isEqual } from '../utils/date.js';
 import { Calendar } from './Calendar.js';
+
+export type DatePickerDayProps = {
+  focusedDay: Date;
+  today: Date;
+  day: Date;
+  disabled: boolean;
+  inRange: boolean;
+  isSelected: boolean;
+  dateFormatter: Intl.DateTimeFormat;
+  onDaySelect: (event: MouseEvent, day: Date) => void;
+};
+
+export function DatePickerDay({
+  focusedDay,
+  today,
+  day,
+  onDaySelect,
+  disabled,
+  inRange,
+  isSelected,
+  dateFormatter,
+}: DatePickerDayProps) {
+  const isToday = isEqual(day, today);
+  const isMonth = isEqualMonth(day, focusedDay);
+  const isFocused = isEqual(day, focusedDay);
+  const isOutsideRange = !inRange;
+
+  function handleClick(e: MouseEvent) {
+    onDaySelect(e, day);
+  }
+
+  return html`
+    <button
+      type="button"
+      class=${classMap({
+        'date-picker__day': true,
+        'is-outside': isOutsideRange,
+        'is-today': isToday,
+        'is-month': isMonth,
+        'is-disabled': disabled,
+      })}
+      tabindex=${isFocused ? 0 : -1}
+      @click=${handleClick}
+      aria-disabled=${ifDefined(disabled ? 'true' : undefined)}
+      ?disabled=${isOutsideRange}
+      aria-label=${dateFormatter.format(day)}
+      aria-pressed=${isSelected ? 'true' : 'false'}
+      aria-current=${ifDefined(isToday ? 'date' : undefined)}
+    >
+      <span aria-hidden="true">${day.getDate()}</span>
+    </button>
+  `;
+}
 
 function chunk<T>(array: T[], chunkSize: number): T[][] {
   const result = [];
@@ -32,8 +86,7 @@ type DatePickerMonthProps = {
   dateFormatter: Intl.DateTimeFormat;
   isDateDisabled: Calendar['isDateDisabled'];
   onDateSelect: DatePickerDayProps['onDaySelect'];
-  onKeyboardNavigation: DatePickerDayProps['onKeyboardNavigation'];
-  focusedDayRef: (element: HTMLButtonElement) => void;
+  onKeyboardNavigation: (event: KeyboardEvent) => void;
 };
 
 export function DatePickerMonth({
@@ -48,13 +101,12 @@ export function DatePickerMonth({
   isDateDisabled,
   onDateSelect,
   onKeyboardNavigation,
-  focusedDayRef,
 }: DatePickerMonthProps) {
   const today = new Date();
   const days = getViewOfMonth(focusedDate, firstDayOfWeek);
 
   return html`
-    <table class="date-picker__table" aria-labelledby=${labelledById}>
+    <table aria-labelledby=${labelledById}>
       <thead>
         <tr>
           ${mapWithOffset(
@@ -62,7 +114,7 @@ export function DatePickerMonth({
             firstDayOfWeek,
             dayName =>
               html`
-                <th class="date-picker__table-header" scope="col">
+                <th scope="col">
                   <span aria-hidden="true">${dayName.substring(0, 2)}</span>
                   <span class="date-picker__vhidden">${dayName}</span>
                 </th>
@@ -70,25 +122,23 @@ export function DatePickerMonth({
           )}
         </tr>
       </thead>
-      <tbody>
+      <tbody @keydown=${onKeyboardNavigation}>
         ${chunk(days, 7).map(
           week => html`
-            <tr class="date-picker__row">
+            <tr>
               ${week.map(
                 day =>
                   html`
-                    <td class="date-picker__cell">
+                    <td>
                       ${DatePickerDay({
                         day,
                         today,
                         focusedDay: focusedDate,
                         isSelected: isEqual(day, selectedDate),
                         disabled: isDateDisabled(day),
-                        inRange: inRange(day, min, max),
+                        inRange: dateInRange(day, min, max),
                         onDaySelect: onDateSelect,
                         dateFormatter,
-                        onKeyboardNavigation,
-                        focusedDayRef,
                       })}
                     </td>
                   `

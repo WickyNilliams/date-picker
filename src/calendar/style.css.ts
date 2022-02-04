@@ -5,7 +5,7 @@ export const style = css`
   // CALENDAR __ TABLE
   // --------------------------------------------*/
 
-  .date-picker__table {
+  table {
     border-collapse: collapse;
     border-spacing: 0;
     color: var(--date-picker-color-text);
@@ -16,7 +16,7 @@ export const style = css`
     width: 100%;
   }
 
-  .date-picker__table-header {
+  th {
     font-size: 0.75rem;
     font-weight: var(--date-picker-font-bold);
     letter-spacing: 1px;
@@ -26,7 +26,7 @@ export const style = css`
     text-transform: uppercase;
   }
 
-  .date-picker__cell {
+  td {
     text-align: center;
   }
 
@@ -250,53 +250,6 @@ export const style = css`
   .date-picker__select-label svg {
     width: 16px;
     height: 16px;
-  }
-
-  /* ---------------------------------------------
-  // CALENDAR __ MOBILE
-  // --------------------------------------------*/
-
-  .date-picker__mobile {
-    align-items: center;
-    border-bottom: 1px solid rgba(0, 0, 0, 0.12);
-    display: flex;
-    justify-content: space-between;
-    margin-bottom: 20px;
-    margin-left: -10%;
-    overflow: hidden;
-    padding: 12px 20px;
-    position: relative;
-    text-overflow: ellipsis;
-    white-space: nowrap;
-    width: 120%;
-  }
-
-  @media (min-width: 36em) {
-    .date-picker__mobile {
-      border: 0;
-      margin: 0;
-      overflow: visible;
-      padding: 0;
-      position: absolute;
-      right: -8px;
-      top: -8px;
-      width: auto;
-    }
-  }
-
-  .date-picker__mobile-heading {
-    display: inline-block;
-    font-weight: var(--date-picker-font-bold);
-    max-width: 84%;
-    overflow: hidden;
-    text-overflow: ellipsis;
-    white-space: nowrap;
-  }
-
-  @media (min-width: 36em) {
-    .date-picker__mobile-heading {
-      display: none;
-    }
   }
 
   /* ---------------------------------------------

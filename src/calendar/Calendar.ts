@@ -45,12 +45,10 @@ export class Calendar extends LitElement {
   static styles = style;
   // static shadowRootOptions = { ...LitElement.shadowRootOptions, delegatesFocus: true };
 
-  private monthSelectId = 'month-select';
-  private yearSelectId = 'year-select';
   private dialogLabelId = 'dialog-label';
 
   @query('.date-picker__select--month', true) private monthSelectNode!: HTMLElement;
-  @query(`button[tabindex="0"]`) private focusedDayNode!: HTMLButtonElement;
+  @query(`[aria-pressed][tabindex="0"]`) private focusedDayNode!: HTMLButtonElement;
 
   private dateFormatShort!: Intl.DateTimeFormat;
 
@@ -145,11 +143,12 @@ export class Calendar extends LitElement {
               ${this.localization.monthNames[focusedMonth]} ${this.focusedDay.getFullYear()}
             </h2>
 
-            <label htmlFor=${this.monthSelectId} class="date-picker__vhidden">
-              ${this.localization.monthSelectLabel}
-            </label>
             <div class="date-picker__select">
-              <select id=${this.monthSelectId} class="date-picker__select--month" @change=${this.handleMonthSelect}>
+              <select
+                aria-label=${this.localization.monthSelectLabel}
+                class="date-picker__select--month"
+                @change=${this.handleMonthSelect}
+              >
                 ${this.localization.monthNames.map(
                   (month, i) =>
                     html`<option
@@ -176,11 +175,12 @@ export class Calendar extends LitElement {
               </div>
             </div>
 
-            <label htmlFor=${this.yearSelectId} class="date-picker__vhidden">
-              ${this.localization.yearSelectLabel}
-            </label>
             <div class="date-picker__select">
-              <select id=${this.yearSelectId} class="date-picker__select--year" @change=${this.handleYearSelect}>
+              <select
+                aria-label=${this.localization.yearSelectLabel}
+                class="date-picker__select--year"
+                @change=${this.handleYearSelect}
+              >
                 ${range(minYear, maxYear).map(
                   year => html`<option key=${year} ?selected=${year === focusedYear}>${year}</option>`
                 )}
@@ -249,7 +249,6 @@ export class Calendar extends LitElement {
           labelledById: this.dialogLabelId,
           localization: this.localization,
           firstDayOfWeek: this.firstDayOfWeek,
-          focusedDayRef: this.processFocusedDayNode,
           min: minDate,
           max: maxDate,
           isDateDisabled: this.isDateDisabled,
@@ -419,10 +418,4 @@ export class Calendar extends LitElement {
       })
     );
   }
-
-  private processFocusedDayNode = () => {
-    if (this.activeFocus) {
-      setTimeout(() => this.focusedDayNode.focus(), 0);
-    }
-  };
 }
