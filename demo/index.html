@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html lang="en-GB">
+  <head>
+    <meta charset="UTF-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Date picker demo</title>
+    <link rel="stylesheet" data-theme="light" href="./light.css" />
+    <link rel="stylesheet" data-theme="dark" href="./dark.css" disabled />
+    <style>
+      html,
+      body {
+        padding: 0;
+        margin: 0;
+      }
+      body {
+        padding: 2em;
+        font-family: var(--date-picker-font);
+        background-color: var(--date-picker-color-surface);
+        color: var(--date-picker-color-text);
+      }
+      .toggle-theme {
+        position: fixed;
+        top: 1em;
+        right: 1em;
+        opacity: 0.5;
+        transition: opacity 50ms ease-in;
+      }
+      .toggle-theme:hover,
+      .toggle-theme:focus {
+        opacity: 1;
+      }
+
+      label {
+        display: block;
+      }
+
+      form > * + * {
+        margin-top: 1rem;
+      }
+    </style>
+  </head>
+  <body>
+    <button class="toggle-theme" type="button">Switch to dark theme</button>
+
+    <form>
+      <label> Pick a date: </label>
+      <date-picker></date-picker>
+      <button type="submit">Submit</button>
+    </form>
+
+    <script type="module">
+      import '../src/date-picker/date-picker.ts';
+
+      const toggleButton = document.querySelector('.toggle-theme');
+      const themeStyles = Array.from(document.querySelectorAll('link'));
+      let currentTheme = 'light';
+
+      function setTheme(theme) {
+        currentTheme = theme;
+        themeStyles.forEach(link => {
+          link.disabled = link.dataset.theme !== theme;
+        });
+        toggleButton.textContent = `Switch to ${theme === 'light' ? 'dark' : 'light'} theme`;
+      }
+
+      toggleButton.addEventListener('click', function (e) {
+        setTheme(currentTheme === 'light' ? 'dark' : 'light');
+      });
+    </script>
+  </body>
+</html>
