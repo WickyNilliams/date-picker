@@ -1,7 +1,7 @@
 import { html, LitElement, nothing, PropertyValues } from 'lit';
 import { property, query, state } from 'lit/decorators.js';
 import { classMap } from 'lit/directives/class-map.js';
-import { printISODate, parseISODate, DaysOfWeek, createDate } from '../utils/date.js';
+import { printISODate, parseISODate, DaysOfWeek, createDate, parseFromRegex, formatFromString } from '../utils/date.js';
 import { en, DatePickerLocalizedText } from './localization.js';
 import isoAdapter, { DateAdapter } from './date-adapter.js';
 import { style } from './style.css.js';
@@ -12,7 +12,7 @@ import { FormDataController } from '../utils/FormDataController.js';
 import { SwipeController } from '../utils/SwipeController.js';
 import { cleanValue } from '../utils/input.js';
 
-const DISALLOWED_CHARACTERS = /[^0-9./-]+/g;
+const DISALLOWED_CHARACTERS = /[^0-9./-]/g;
 
 export class DatePicker extends LitElement {
   static styles = style;
@@ -135,14 +135,20 @@ export class DatePicker extends LitElement {
    * Get the value as a date object.
    */
   get valueAsDate(): Date | undefined {
-    return this.dateAdapter.parse(this.inputValue, createDate);
+    const { parse } = this.dateAdapter;
+    return typeof parse === 'function' ? parse(this.inputValue, createDate) : parseFromRegex(parse, this.inputValue);
   }
 
   /**
    * Set the value as a date object.
    */
   set valueAsDate(date: Date | undefined) {
-    this.inputValue = date ? this.dateAdapter.format(date) : '';
+    if (!date) {
+      this.inputValue = '';
+    } else {
+      const { format } = this.dateAdapter;
+      this.inputValue = typeof format === 'function' ? format(date) : formatFromString(format, date);
+    }
   }
 
   /**

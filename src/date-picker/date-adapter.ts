@@ -5,8 +5,8 @@ export type DateParser = (input: string, createDate: CreateDate) => Date | undef
 export type DateFormatter = (date: Date) => string;
 
 export interface DateAdapter {
-  parse: DateParser;
-  format: DateFormatter;
+  parse: DateParser | RegExp;
+  format: DateFormatter | string;
 }
 
 const isoAdapter: DateAdapter = {

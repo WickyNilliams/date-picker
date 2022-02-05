@@ -1,4 +1,4 @@
-const ISO_DATE_FORMAT = /^(\d{4})-(\d{2})-(\d{2})$/;
+const ISO_DATE_FORMAT = /^(?<year>\d{4})-(?<month>\d{2})-(?<day>\d{2})$/;
 
 export const enum DaysOfWeek {
   Sunday = 0,
@@ -10,6 +10,10 @@ export const enum DaysOfWeek {
   Saturday = 6,
 }
 
+/**
+ * Helper function for creating dates, which ensures individual date parts are valid.
+ * Does not handle finer details like too many days in specific month.
+ */
 export function createDate(year: string, month: string, day: string): Date | undefined {
   const dayInt = parseInt(day, 10);
   const monthInt = parseInt(month, 10);
@@ -31,44 +35,46 @@ export function createDate(year: string, month: string, day: string): Date | und
 }
 
 /**
- * @param value date string in ISO format YYYY-MM-DD
+ * Parses a date using a regexp as the format definition.
+ * @param format a regexp which specifies the date format. this must use named capture groups with names: year, month, day
+ * @param date the date string to parse
  */
-export function parseISODate(value: string): Date | undefined {
-  if (!value) {
-    return undefined;
-  }
+export function parseFromRegex(format: RegExp, date: string): Date | undefined {
+  const match = format.exec(date);
 
-  const matches = value.match(ISO_DATE_FORMAT);
-
-  if (matches) {
-    return createDate(matches[1], matches[2], matches[3]);
+  if (match && match.groups) {
+    return createDate(match.groups.year, match.groups.month, match.groups.day);
   }
 }
 
 /**
- * print date in format YYYY-MM-DD
+ * @param value date string in ISO format YYYY-MM-DD
+ */
+export function parseISODate(value: string): Date | undefined {
+  return value ? parseFromRegex(ISO_DATE_FORMAT, value) : undefined;
+}
+
+/**
+ * Formats a date based on the given string. The string should contain the characters "mm", "dd", "yyyy"
+ * you wish to place the respective values. e.g. for ISO-8601 "yyyy-mm-dd".
+ * @param format format for the date.
+ * @param date the date to format.
+ * @returns
+ */
+export function formatFromString(format: string, date: Date) {
+  const d = date.getDate().toString(10).padStart(2, '0');
+  const m = (date.getMonth() + 1).toString(10).padStart(2, '0');
+  const y = date.getFullYear().toString(10);
+
+  return format.replace(/MM/i, m).replace(/YYYY/i, y).replace(/DD/i, d);
+}
+
+/**
+ * Print date in format YYYY-MM-DD
  * @param date
  */
 export function printISODate(date: Date): string {
-  if (!date) {
-    return '';
-  }
-
-  let d = date.getDate().toString(10);
-  let m = (date.getMonth() + 1).toString(10);
-  const y = date.getFullYear().toString(10);
-
-  // days are not zero-indexed, so pad if less than 10
-  if (date.getDate() < 10) {
-    d = `0${d}`;
-  }
-
-  // months *are* zero-indexed, pad if less than 9!
-  if (date.getMonth() < 9) {
-    m = `0${m}`;
-  }
-
-  return `${y}-${m}-${d}`;
+  return date ? formatFromString('yyyy-mm-dd', date) : '';
 }
 
 /**

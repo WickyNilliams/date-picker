@@ -45,7 +45,7 @@
 
     <form>
       <label> Pick a date: </label>
-      <date-picker name="test"></date-picker>
+      <date-picker id="picker" name="test"></date-picker>
       <button type="submit">Submit</button>
     </form>
 
@@ -67,6 +67,14 @@
       toggleButton.addEventListener('click', function (e) {
         setTheme(currentTheme === 'light' ? 'dark' : 'light');
       });
+
+      picker.addEventListener('date-picker-change', e => console.log(e.target.value));
+
+      // UK date format
+      picker.dateAdapter = {
+        parse: /(?<day>\d{1,2})\/(?<month>\d{1,2})\/(?<year>\d{4})/,
+        format: 'dd/mm/yyyy',
+      };
     </script>
   </body>
 </html>
