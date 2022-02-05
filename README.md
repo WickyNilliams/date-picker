@@ -13,6 +13,9 @@ Todo:
 - [x] RTL support
 - [ ] Perhaps support slotting your own input?
 - [ ] Decide on project/tag name
+- [ ] add `valueAsDate` property
+- [ ] add `valueAsNumber` property
+- [ ] add `validity` property
 
 ## Installation
 
