@@ -15,7 +15,7 @@ Todo:
 - [ ] Decide on project/tag name
 - [x] add `valueAsDate` property
 - [x] add `valueAsNumber` property
-- [ ] add `validity` property
+- [x] add `validity` property
 - [x] simplify user parsing/formatting. named capture groups for parse? format string?
 - [x] configurable disallowed chars
 

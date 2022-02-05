@@ -1,7 +1,15 @@
 import { html, LitElement, nothing, PropertyValues } from 'lit';
 import { property, query, state } from 'lit/decorators.js';
 import { classMap } from 'lit/directives/class-map.js';
-import { printISODate, parseISODate, DaysOfWeek, createDate, parseFromRegex, formatFromString } from '../utils/date.js';
+import {
+  printISODate,
+  parseISODate,
+  DaysOfWeek,
+  createDate,
+  parseFromRegex,
+  formatFromString,
+  inRange,
+} from '../utils/date.js';
 import { en, DatePickerLocalizedText } from './localization.js';
 import isoAdapter, { DateAdapter } from './date-adapter.js';
 import { style } from './style.css.js';
@@ -51,6 +59,29 @@ export class DatePicker extends LitElement {
    */
   @state() inputValue: string = '';
   @state() open = false;
+
+  get validity(): ValidityState {
+    const { valueAsDate } = this;
+
+    const badInput = !valueAsDate;
+    const valueMissing = this.required && badInput;
+    const rangeOverflow = valueAsDate && this.max ? !inRange(valueAsDate, undefined, parseISODate(this.max)) : false;
+    const rangeUnderflow = valueAsDate && this.min ? !inRange(valueAsDate, parseISODate(this.min)) : false;
+
+    return {
+      patternMismatch: false,
+      customError: false,
+      stepMismatch: false,
+      tooLong: false,
+      tooShort: false,
+      typeMismatch: false,
+      valueMissing,
+      badInput,
+      rangeUnderflow,
+      rangeOverflow,
+      valid: !(valueMissing || badInput || rangeUnderflow || rangeOverflow),
+    };
+  }
 
   /**
    * Name of the date picker input.
