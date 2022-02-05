@@ -48,6 +48,10 @@ export class DatePicker extends LitElement {
    */
   private dateFormatLong!: Intl.DateTimeFormat;
 
+  /**
+   * TODO: write explainer about why this is the source of truth, and not `value`
+   */
+  @state() inputValue: string = '';
   @state() open = false;
 
   /**
@@ -72,11 +76,6 @@ export class DatePicker extends LitElement {
    * Should the input be marked as required?
    */
   @property({ type: Boolean }) required: boolean = false;
-
-  /**
-   * Date value. Must be in IS0-8601 format: YYYY-MM-DD.
-   */
-  @property({ reflect: true }) value: string = '';
 
   /**
    * Minimum date allowed to be picked. Must be in IS0-8601 format: YYYY-MM-DD.
@@ -115,21 +114,50 @@ export class DatePicker extends LitElement {
    */
   @property({ attribute: false }) dateAdapter: DateAdapter = isoAdapter;
 
+  /**
+   * Date value. Must be in IS0-8601 format: YYYY-MM-DD.
+   */
+  set value(value: string) {
+    const oldVal = this.value;
+    const date = parseISODate(value);
+    this.valueAsDate = date;
+
+    this.requestUpdate('value', oldVal);
+  }
+
+  @property()
+  get value(): string {
+    const date = this.valueAsDate;
+    return date ? printISODate(date) : '';
+  }
+
+  /**
+   * Get the value as a date object.
+   */
   get valueAsDate(): Date | undefined {
-    return parseISODate(this.value);
+    return this.dateAdapter.parse(this.inputValue, createDate);
   }
 
+  /**
+   * Set the value as a date object.
+   */
   set valueAsDate(date: Date | undefined) {
-    this.value = date ? printISODate(date) : '';
+    this.inputValue = date ? this.dateAdapter.format(date) : '';
   }
 
+  /**
+   * Get the value as a number of milliseconds. Returns NaN if date is invalid.
+   */
   get valueAsNumber(): number {
     const date = this.valueAsDate;
     return date ? date.getTime() : NaN;
   }
 
+  /**
+   * Set the value as a number of milliseconds.
+   */
   set valueAsNumber(date: number) {
-    this.value = printISODate(new Date(date));
+    this.valueAsDate = new Date(date);
   }
 
   /**
@@ -158,26 +186,6 @@ export class DatePicker extends LitElement {
   }
 
   /**
-   * Component event handling.
-   */
-
-  handleDocumentClick = (e: MouseEvent) => {
-    if (!this.open) {
-      return;
-    }
-
-    const isClickOutside = e.composedPath().every(node => node !== this.calendar && node !== this.datePickerButton);
-
-    if (isClickOutside) {
-      this.hide(false);
-    }
-  };
-
-  /**
-   * Public methods API
-   */
-
-  /**
    * Show the calendar modal, moving focus to the calendar inside.
    */
   show() {
@@ -204,13 +212,12 @@ export class DatePicker extends LitElement {
 
   render() {
     const { valueAsDate } = this;
-    const formattedDate = valueAsDate ? this.dateAdapter.format(valueAsDate) : '';
 
     return html`
       <div class="input-wrapper">
         <input
-          .value=${formattedDate}
-          placeholder=${this.localization.placeholder}
+          .value=${this.inputValue}
+          placeholder=${this.placeholder}
           ?disabled=${this.disabled}
           ?required=${this.required ? true : undefined}
           aria-autocomplete="none"
@@ -277,6 +284,18 @@ export class DatePicker extends LitElement {
     }
   };
 
+  private handleDocumentClick = (e: MouseEvent) => {
+    if (!this.open) {
+      return;
+    }
+
+    const isClickOutside = e.composedPath().every(node => node !== this.calendar && node !== this.datePickerButton);
+
+    if (isClickOutside) {
+      this.hide(false);
+    }
+  };
+
   private handleEscKey = (event: KeyboardEvent) => {
     if (event.keyCode === 27) {
       this.hide();
@@ -306,22 +325,18 @@ export class DatePicker extends LitElement {
   private handleInputChange = (e: Event) => {
     const target = e.target as HTMLInputElement;
 
-    // clean up any invalid characters
-    cleanValue(target, DISALLOWED_CHARACTERS);
+    const oldValue = this.value;
+    this.inputValue = cleanValue(target, DISALLOWED_CHARACTERS);
+    const newValue = this.value;
 
-    const parsed = this.dateAdapter.parse(target.value, createDate);
-    if (parsed || target.value === '') {
-      this.setValue(parsed);
+    if (oldValue !== newValue) {
+      this.dispatchEvent(new CustomEvent('date-picker-change'));
     }
   };
 
   private handleDaySelect = (event: CustomEvent<{ valueAsDate: Date }>) => {
-    this.setValue(event.detail.valueAsDate);
+    this.valueAsDate = event.detail.valueAsDate;
+    this.dispatchEvent(new CustomEvent('date-picker-change'));
     this.hide();
   };
-
-  private setValue(date?: Date) {
-    this.value = date ? printISODate(date) : '';
-    this.dispatchEvent(new CustomEvent('date-picker-change'));
-  }
 }

@@ -74,7 +74,7 @@ export function printISODate(date: Date): string {
 /**
  * Compare if two dates are in the same month of the same year.
  */
-export function isEqualMonth(a: Date, b: Date): boolean {
+export function isEqualMonth(a: Date | undefined, b: Date | undefined): boolean {
   if (a == null || b == null) {
     return false;
   }
@@ -85,7 +85,7 @@ export function isEqualMonth(a: Date, b: Date): boolean {
 /**
  * Compare if two dates are equal in terms of day, month, and year
  */
-export function isEqual(a?: Date, b?: Date): boolean {
+export function isEqual(a: Date | undefined, b: Date | undefined): boolean {
   if (a == null || b == null) {
     return false;
   }
