@@ -40,7 +40,7 @@
     "lint-staged": "^10.5.4",
     "prettier": "^2.3.2",
     "tslib": "^2.3.1",
-    "typescript": "^4.3.5"
+    "typescript": "^4.5.5"
   },
   "eslintConfig": {
     "parser": "@typescript-eslint/parser",
@@ -101,7 +101,8 @@
           "exceptAfterSingleLine": true
         }
       ],
-      "no-plusplus": "off"
+      "no-plusplus": "off",
+      "no-undef": "off"
     }
   },
   "prettier": {
@@ -119,5 +120,6 @@
       "eslint --fix",
       "prettier --write"
     ]
-  }
+  },
+  "customElements": "custom-elements.json"
 }
