@@ -8,6 +8,7 @@ import isoAdapter, { DateAdapter } from './date-adapter.js';
 import { style } from './style.css.js';
 import '../calendar/date-calendar.js';
 import { Calendar } from '../calendar/Calendar.js';
+import { FormDataController } from '../utils/FormDataController.js';
 
 function cleanValue(input: HTMLInputElement, regex: RegExp): string {
   const { value } = input;
@@ -40,6 +41,7 @@ export class DatePicker extends LitElement {
   @query(`.date-picker__close`, true) private closeButton!: HTMLButtonElement;
   @query(`date-calendar`, true) private calendar!: Calendar;
 
+  private formData = new FormDataController(this);
   private initialTouchX = 0;
   private initialTouchY = 0;
 
@@ -60,7 +62,7 @@ export class DatePicker extends LitElement {
   /**
    * Name of the date picker input.
    */
-  @property() name: string = 'date';
+  @property() name: string = '';
 
   /**
    * Makes the date picker input component disabled. This prevents users from being able to
