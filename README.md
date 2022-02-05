@@ -18,6 +18,9 @@ Todo:
 - [x] add `validity` property
 - [x] simplify user parsing/formatting. named capture groups for parse? format string?
 - [x] configurable disallowed chars
+- [ ] date range component?
+- [ ] readonly
+- [ ] track bundle size
 
 ## Installation
 
