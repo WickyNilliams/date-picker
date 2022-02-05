@@ -1,35 +1,16 @@
-import { html, LitElement } from 'lit';
+import { html, LitElement, nothing, PropertyValues } from 'lit';
 import { property, query, state } from 'lit/decorators.js';
 import { classMap } from 'lit/directives/class-map.js';
 import { printISODate, parseISODate, DaysOfWeek, createDate } from '../utils/date.js';
-import { DatePickerInput } from './input.js';
 import { en, DatePickerLocalizedText } from './localization.js';
 import isoAdapter, { DateAdapter } from './date-adapter.js';
 import { style } from './style.css.js';
 import '../calendar/date-calendar.js';
 import { Calendar } from '../calendar/Calendar.js';
+import { calendar as calendarIcon, close as closeIcon } from './icons.js';
 import { FormDataController } from '../utils/FormDataController.js';
 import { SwipeController } from '../utils/SwipeController.js';
-
-function cleanValue(input: HTMLInputElement, regex: RegExp): string {
-  const { value } = input;
-  const cursor = input.selectionStart as number;
-
-  const beforeCursor = value.slice(0, cursor);
-  const afterCursor = value.slice(cursor, value.length);
-
-  const filteredBeforeCursor = beforeCursor.replace(regex, '');
-  const filterAfterCursor = afterCursor.replace(regex, '');
-
-  const newValue = filteredBeforeCursor + filterAfterCursor;
-  const newCursor = filteredBeforeCursor.length;
-
-  input.value = newValue;
-  input.selectionStart = newCursor;
-  input.selectionEnd = newCursor;
-
-  return newValue;
-}
+import { cleanValue } from '../utils/input.js';
 
 const DISALLOWED_CHARACTERS = /[^0-9./-]+/g;
 
@@ -37,8 +18,8 @@ export class DatePicker extends LitElement {
   static styles = style;
   static shadowRootOptions = { ...LitElement.shadowRootOptions, delegatesFocus: true };
 
-  @query(`.date-picker__toggle`, true) private datePickerButton!: HTMLButtonElement;
-  @query(`.date-picker__close`, true) private closeButton!: HTMLButtonElement;
+  @query(`.toggle`, true) private datePickerButton!: HTMLButtonElement;
+  @query(`.close`, true) private closeButton!: HTMLButtonElement;
   @query(`date-calendar`, true) private calendar!: Calendar;
   @query(`[role="dialog"]`, true) private dialog!: HTMLElement;
 
@@ -144,8 +125,8 @@ export class DatePicker extends LitElement {
     document.removeEventListener('click', this.handleDocumentClick, true);
   }
 
-  protected willUpdate(_changedProperties: Map<string | number | symbol, unknown>): void {
-    if (_changedProperties.has('localization')) {
+  protected willUpdate(changedProperties: PropertyValues<this>): void {
+    if (changedProperties.has('localization')) {
       this.dateFormatLong = new Intl.DateTimeFormat(this.localization.locale, {
         day: 'numeric',
         month: 'long',
@@ -162,20 +143,6 @@ export class DatePicker extends LitElement {
     if (!this.open) {
       return;
     }
-
-    // the dialog and the button aren't considered clicks outside.
-    // dialog for obvious reasons, but the button needs to be skipped
-    // so that two things are possible:
-    //
-    // a) clicking again on the button when dialog is open should close the modal.
-    //    without skipping the button here, we would see a click outside
-    //    _and_ a click on the button, so the `open` state goes
-    //    open -> close (click outside) -> open (click button)
-    //
-    // b) clicking another date picker's button should close the current calendar
-    //    and open the new one. this means we can't stopPropagation() on the button itself
-    //
-    // this was the only satisfactory combination of things to get the above to work
 
     const isClickOutside = e.composedPath().every(node => node !== this.calendar && node !== this.datePickerButton);
 
@@ -218,67 +185,61 @@ export class DatePicker extends LitElement {
     const formattedDate = valueAsDate ? this.dateAdapter.format(valueAsDate) : '';
 
     return html`
-      <div class="date-picker">
-        ${DatePickerInput({
-          dateFormatter: this.dateFormatLong!,
-          valueAsDate,
-          formattedValue: formattedDate,
-          onInput: this.handleInputChange,
-          onBlur: this.handleBlur,
-          onFocus: this.handleFocus,
-          onClick: this.toggleOpen,
-          name: this.name,
-          disabled: this.disabled,
-          required: this.required,
-          localization: this.localization,
+      <div class="input-wrapper">
+        <input
+          .value=${formattedDate}
+          placeholder=${this.localization.placeholder}
+          ?disabled=${this.disabled}
+          ?required=${this.required ? true : undefined}
+          aria-autocomplete="none"
+          @input=${this.handleInputChange}
+          @focus=${this.handleFocus}
+          @blur=${this.handleBlur}
+          autocomplete="off"
+        />
+
+        <button class="toggle" @click=${this.toggleOpen} ?disabled=${this.disabled} type="button">
+          <span class="toggle-icon">${calendarIcon}</span>
+          <span class="v-hidden">
+            ${this.localization.buttonLabel}
+            ${valueAsDate
+              ? html`<span>, ${this.localization.selectedDateMessage} ${this.dateFormatLong.format(valueAsDate)}</span>`
+              : nothing}
+          </span>
+        </button>
+      </div>
+
+      <div
+        class=${classMap({
+          'is-left': this.direction === 'left',
         })}
+        role="dialog"
+        aria-modal="true"
+        aria-hidden=${this.open ? 'false' : 'true'}
+        aria-labelledby="dialog-heading"
+      >
+        <div class="dialog-content" @keydown=${this.handleEscKey}>
+          <div tabindex="0" @focus=${this.focusLast}></div>
 
-        <div
-          class=${classMap({
-            'date-picker__dialog': true,
-            'is-left': this.direction === 'left',
-            'is-active': this.open,
-          })}
-          role="dialog"
-          aria-modal="true"
-          aria-hidden=${this.open ? 'false' : 'true'}
-          aria-labelledby="dialog-heading"
-        >
-          <div class="date-picker__dialog-content" @keydown=${this.handleEscKey}>
-            <div tabindex="0" @focus=${this.focusLast}></div>
-
-            <div class="date-picker__mobile">
-              <div id="dialog-heading" class="date-picker__mobile-heading">${this.localization.calendarHeading}</div>
-              <button class="date-picker__close" @click=${() => this.hide()} type="button">
-                <svg
-                  aria-hidden="true"
-                  fill="currentColor"
-                  xmlns="http://www.w3.org/2000/svg"
-                  width="16"
-                  height="16"
-                  viewBox="0 0 24 24"
-                >
-                  <path d="M0 0h24v24H0V0z" fill="none" />
-                  <path
-                    d="M18.3 5.71c-.39-.39-1.02-.39-1.41 0L12 10.59 7.11 5.7c-.39-.39-1.02-.39-1.41 0-.39.39-.39 1.02 0 1.41L10.59 12 5.7 16.89c-.39.39-.39 1.02 0 1.41.39.39 1.02.39 1.41 0L12 13.41l4.89 4.89c.39.39 1.02.39 1.41 0 .39-.39.39-1.02 0-1.41L13.41 12l4.89-4.89c.38-.38.38-1.02 0-1.4z"
-                  />
-                </svg>
-                <span class="date-picker__vhidden">${this.localization.closeLabel}</span>
-              </button>
-            </div>
-
-            <date-calendar
-              value=${this.value}
-              @calendar-change=${this.handleDaySelect}
-              min=${this.min}
-              max=${this.max}
-              first-day-of-week=${this.firstDayOfWeek}
-              .localization=${this.localization}
-              .isDateDisabled=${this.isDateDisabled}
-            ></date-calendar>
-
-            <div tabindex="0" @focus=${this.focusFirst}></div>
+          <div class="mobile">
+            <div id="dialog-heading" class="mobile-heading">${this.localization.calendarHeading}</div>
+            <button class="close" @click=${() => this.hide()} type="button">
+              ${closeIcon}
+              <span class="v-hidden">${this.localization.closeLabel}</span>
+            </button>
           </div>
+
+          <date-calendar
+            value=${this.value}
+            @calendar-change=${this.handleDaySelect}
+            min=${this.min}
+            max=${this.max}
+            first-day-of-week=${this.firstDayOfWeek}
+            .localization=${this.localization}
+            .isDateDisabled=${this.isDateDisabled}
+          ></date-calendar>
+
+          <div tabindex="0" @focus=${this.focusFirst}></div>
         </div>
       </div>
     `;

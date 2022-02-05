@@ -7,18 +7,6 @@ export const style = css`
 
   :host {
     display: block;
-  }
-
-  .date-picker *,
-  .date-picker *::before,
-  .date-picker *::after {
-    box-sizing: border-box;
-    margin: 0;
-    width: auto;
-  }
-
-  .date-picker {
-    box-sizing: border-box;
     color: var(--date-picker-color-text);
     display: block;
     font-family: var(--date-picker-font);
@@ -28,11 +16,19 @@ export const style = css`
     width: 100%;
   }
 
+  *,
+  *::before,
+  *::after {
+    box-sizing: border-box;
+    margin: 0;
+    width: auto;
+  }
+
   /* ---------------------------------------------
   // DATE PICKER __ INPUT
   // --------------------------------------------*/
 
-  .date-picker__input {
+  input {
     -webkit-appearance: none;
     appearance: none;
     background: var(--date-picker-color-surface);
@@ -47,36 +43,36 @@ export const style = css`
     width: 100%;
   }
 
-  .date-picker__input:focus {
+  input:focus {
     border-color: var(--date-picker-color-primary);
     box-shadow: 0 0 0 1px var(--date-picker-color-primary);
     outline: 0;
   }
 
-  .date-picker__input::-webkit-input-placeholder {
+  input::-webkit-input-placeholder {
     color: var(--date-picker-color-placeholder);
     opacity: 1;
   }
 
-  .date-picker__input:-moz-placeholder {
+  input:-moz-placeholder {
     color: var(--date-picker-color-placeholder);
     opacity: 1;
   }
 
-  .date-picker__input:-ms-input-placeholder {
+  input:-ms-input-placeholder {
     color: var(--date-picker-color-placeholder);
   }
 
-  .date-picker__input-wrapper {
+  .input-wrapper {
     position: relative;
     width: 100%;
   }
 
   /* ---------------------------------------------
-  // DATE PICKER __ TOGGLE
+  // TOGGLE
   // --------------------------------------------*/
 
-  .date-picker__toggle {
+  .toggle {
     -moz-appearance: none;
     -webkit-appearance: none;
     -webkit-user-select: none;
@@ -102,12 +98,12 @@ export const style = css`
     z-index: 2;
   }
 
-  .date-picker__toggle:focus {
+  .toggle:focus {
     box-shadow: 0 0 0 2px var(--date-picker-color-primary);
     outline: 0;
   }
 
-  .date-picker__toggle-icon {
+  .toggle-icon {
     display: flex;
     flex-basis: 100%;
     justify-content: center;
@@ -115,10 +111,10 @@ export const style = css`
   }
 
   /* ---------------------------------------------
-  // DATE PICKER __ DIALOG
+  // DIALOG
   // --------------------------------------------*/
 
-  .date-picker__dialog {
+  [role='dialog'] {
     display: flex;
     left: 0;
     min-width: 320px;
@@ -135,7 +131,7 @@ export const style = css`
   }
 
   @media (max-width: 35.9375em) {
-    .date-picker__dialog {
+    [role='dialog'] {
       background: var(--date-picker-color-overlay);
       bottom: 0;
       position: fixed;
@@ -146,13 +142,13 @@ export const style = css`
     }
   }
 
-  .date-picker__dialog.is-left {
+  [role='dialog'].is-left {
     left: auto;
     right: 0;
     width: auto;
   }
 
-  .date-picker__dialog.is-active {
+  [role='dialog'][aria-hidden='false'] {
     /**
      * exclude visibility from transition properties
      * so we can immediately move focus to element when active
@@ -163,7 +159,7 @@ export const style = css`
     visibility: visible;
   }
 
-  .date-picker__dialog-content {
+  .dialog-content {
     background: var(--date-picker-color-surface);
     border: 1px solid rgba(0, 0, 0, 0.1);
     border-radius: var(--date-picker-radius);
@@ -180,7 +176,7 @@ export const style = css`
   }
 
   @media (max-width: 35.9375em) {
-    .date-picker__dialog-content {
+    .dialog-content {
       border: 0;
       border-radius: 0;
       border-top-left-radius: var(--date-picker-radius);
@@ -199,7 +195,7 @@ export const style = css`
       will-change: transform, opacity, visibility;
     }
 
-    .is-active .date-picker__dialog-content {
+    [aria-hidden='false'] .dialog-content {
       opacity: 1;
       transform: translateZ(0) translateY(0);
       visibility: visible;
@@ -207,10 +203,10 @@ export const style = css`
   }
 
   /* ---------------------------------------------
-  // DATE PICKER __ MOBILE
+  // MOBILE
   // --------------------------------------------*/
 
-  .date-picker__mobile {
+  .mobile {
     align-items: center;
     border-bottom: 1px solid rgba(0, 0, 0, 0.12);
     display: flex;
@@ -225,20 +221,7 @@ export const style = css`
     width: 120%;
   }
 
-  @media (min-width: 36em) {
-    .date-picker__mobile {
-      border: 0;
-      margin: 0;
-      overflow: visible;
-      padding: 0;
-      position: absolute;
-      right: -8px;
-      top: -8px;
-      width: auto;
-    }
-  }
-
-  .date-picker__mobile-heading {
+  .mobile-heading {
     display: inline-block;
     font-weight: var(--date-picker-font-bold);
     max-width: 84%;
@@ -248,16 +231,27 @@ export const style = css`
   }
 
   @media (min-width: 36em) {
-    .date-picker__mobile-heading {
+    .mobile {
+      border: 0;
+      margin: 0;
+      overflow: visible;
+      padding: 0;
+      position: absolute;
+      right: -8px;
+      top: -8px;
+      width: auto;
+    }
+
+    .mobile-heading {
       display: none;
     }
   }
 
   /* ---------------------------------------------
-  // DATE PICKER __ CLOSE
+  // CLOSE
   // --------------------------------------------*/
 
-  .date-picker__close {
+  .close {
     -webkit-appearance: none;
     align-items: center;
     appearance: none;
@@ -273,32 +267,29 @@ export const style = css`
     width: 24px;
   }
 
-  @media (min-width: 36em) {
-    .date-picker__close {
-      opacity: 0;
-    }
-  }
-
-  .date-picker__close:focus {
+  .close:focus {
     box-shadow: 0 0 0 2px var(--date-picker-color-primary);
     outline: none;
   }
 
   @media (min-width: 36em) {
-    .date-picker__close:focus {
+    .close {
+      opacity: 0;
+    }
+    .close:focus {
       opacity: 1;
     }
   }
 
-  .date-picker__close svg {
+  .close svg {
     margin: 0 auto;
   }
 
   /* ---------------------------------------------
-  // DATE PICKER __ VISUALLY HIDDEN
+  // VISUALLY HIDDEN
   // --------------------------------------------*/
 
-  .date-picker__vhidden {
+  .v-hidden {
     border: 0;
     clip: rect(1px, 1px, 1px, 1px);
     height: 1px;

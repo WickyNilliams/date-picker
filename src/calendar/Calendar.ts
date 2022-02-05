@@ -1,12 +1,18 @@
 import { html, LitElement, PropertyValues } from 'lit';
 import { state, property, query } from 'lit/decorators.js';
+import { classMap } from 'lit/directives/class-map.js';
+import { ifDefined } from 'lit/directives/if-defined.js';
+import { chunk, mapWithOffset, range } from '../utils/collection.js';
 import {
   addDays,
   clamp,
   DaysOfWeek,
   endOfMonth,
   endOfWeek,
-  inRange,
+  getViewOfMonth,
+  inRange as dateInRange,
+  isEqual,
+  isEqualMonth,
   parseISODate,
   printISODate,
   setMonth,
@@ -15,18 +21,9 @@ import {
   startOfWeek,
 } from '../utils/date.js';
 import { SwipeController } from '../utils/SwipeController.js';
+import { dropdown, nextMonth, prevMonth } from './icons.js';
 import { en } from './localization.js';
-import { DatePickerMonth } from './month.js';
 import { style } from './style.css.js';
-
-function range(from: number, to: number) {
-  const result: number[] = [];
-
-  for (let i = from; i <= to; i++) {
-    result.push(i);
-  }
-  return result;
-}
 
 const keyCode = {
   TAB: 9,
@@ -44,9 +41,6 @@ const keyCode = {
 
 export class Calendar extends LitElement {
   static styles = style;
-  // static shadowRootOptions = { ...LitElement.shadowRootOptions, delegatesFocus: true };
-
-  private dialogLabelId = 'dialog-label';
 
   @query('.date-picker__select--month', true) private monthSelectNode!: HTMLElement;
   @query(`[aria-pressed][tabindex="0"]`) private focusedDayNode!: HTMLButtonElement;
@@ -114,11 +108,11 @@ export class Calendar extends LitElement {
     }
   }
 
-  protected willUpdate(_changedProperties: Map<string | number | symbol, unknown>): void {
-    if (_changedProperties.has('value')) {
+  protected willUpdate(changedProperties: PropertyValues<this>): void {
+    if (changedProperties.has('value')) {
       this.setFocusedDay(parseISODate(this.value) || new Date());
     }
-    if (_changedProperties.has('localization')) {
+    if (changedProperties.has('localization')) {
       this.dateFormatShort = new Intl.DateTimeFormat(this.localization.locale, { day: 'numeric', month: 'long' });
     }
   }
@@ -145,17 +139,20 @@ export class Calendar extends LitElement {
     const minYear = minDate ? minDate.getFullYear() : selectedYear - 10;
     const maxYear = maxDate ? maxDate.getFullYear() : selectedYear + 10;
 
+    const today = new Date();
+    const days = getViewOfMonth(this.focusedDay, this.firstDayOfWeek);
+
     return html`
-      <div class="date-picker__header" @focusin=${this.disableActiveFocus}>
+      <div class="header" @focusin=${this.disableActiveFocus}>
         <div>
-          <h2 id=${this.dialogLabelId} class="date-picker__vhidden" aria-live="polite" aria-atomic="true">
+          <h2 id="dialog-label" class="v-hidden" aria-live="polite" aria-atomic="true">
             ${this.localization.monthNames[focusedMonth]} ${this.focusedDay.getFullYear()}
           </h2>
 
-          <div class="date-picker__select">
+          <div class="select">
             <select
               aria-label=${this.localization.monthSelectLabel}
-              class="date-picker__select--month"
+              class="select--month"
               @change=${this.handleMonthSelect}
             >
               ${this.localization.monthNames.map(
@@ -164,7 +161,7 @@ export class Calendar extends LitElement {
                     key=${month}
                     value=${i}
                     ?selected=${i === focusedMonth}
-                    ?disabled=${!inRange(
+                    ?disabled=${!dateInRange(
                       new Date(focusedYear, i, 1),
                       minDate ? startOfMonth(minDate) : undefined,
                       maxDate ? endOfMonth(maxDate) : undefined
@@ -174,100 +171,92 @@ export class Calendar extends LitElement {
                   </option>`
               )}
             </select>
-            <div class="date-picker__select-label" aria-hidden="true">
+            <div class="select-label" aria-hidden="true">
               <span>${this.localization.monthNamesShort[focusedMonth]}</span>
-              <svg fill="currentColor" xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24">
-                <path
-                  d="M8.12 9.29L12 13.17l3.88-3.88c.39-.39 1.02-.39 1.41 0 .39.39.39 1.02 0 1.41l-4.59 4.59c-.39.39-1.02.39-1.41 0L6.7 10.7c-.39-.39-.39-1.02 0-1.41.39-.38 1.03-.39 1.42 0z"
-                />
-              </svg>
+              ${dropdown}
             </div>
           </div>
 
-          <div class="date-picker__select">
+          <div class="select">
             <select
               aria-label=${this.localization.yearSelectLabel}
-              class="date-picker__select--year"
+              class="select--year"
               @change=${this.handleYearSelect}
             >
               ${range(minYear, maxYear).map(
                 year => html`<option key=${year} ?selected=${year === focusedYear}>${year}</option>`
               )}
             </select>
-            <div class="date-picker__select-label" aria-hidden="true">
+            <div class="select-label" aria-hidden="true">
               <span>${this.focusedDay.getFullYear()}</span>
-              <svg fill="currentColor" xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24">
-                <path
-                  d="M8.12 9.29L12 13.17l3.88-3.88c.39-.39 1.02-.39 1.41 0 .39.39.39 1.02 0 1.41l-4.59 4.59c-.39.39-1.02.39-1.41 0L6.7 10.7c-.39-.39-.39-1.02 0-1.41.39-.38 1.03-.39 1.42 0z"
-                />
-              </svg>
+              ${dropdown}
             </div>
           </div>
         </div>
 
-        <div class="date-picker__nav">
-          <button
-            class="date-picker__prev"
-            @click=${this.handlePreviousMonthClick}
-            ?disabled=${prevMonthDisabled}
-            type="button"
-          >
-            <svg
-              aria-hidden="true"
-              fill="currentColor"
-              xmlns="http://www.w3.org/2000/svg"
-              width="21"
-              height="21"
-              viewBox="0 0 24 24"
-            >
-              <path
-                d="M14.71 15.88L10.83 12l3.88-3.88c.39-.39.39-1.02 0-1.41-.39-.39-1.02-.39-1.41 0L8.71 11.3c-.39.39-.39 1.02 0 1.41l4.59 4.59c.39.39 1.02.39 1.41 0 .38-.39.39-1.03 0-1.42z"
-              />
-            </svg>
-            <span class="date-picker__vhidden">${this.localization.prevMonthLabel}</span>
+        <div class="nav">
+          <button class="prev" @click=${this.handlePreviousMonthClick} ?disabled=${prevMonthDisabled} type="button">
+            ${prevMonth}
+            <span class="v-hidden">${this.localization.prevMonthLabel}</span>
           </button>
-          <button
-            class="date-picker__next"
-            @click=${this.handleNextMonthClick}
-            ?disabled=${nextMonthDisabled}
-            type="button"
-          >
-            <svg
-              aria-hidden="true"
-              fill="currentColor"
-              xmlns="http://www.w3.org/2000/svg"
-              width="21"
-              height="21"
-              viewBox="0 0 24 24"
-            >
-              <path
-                d="M9.29 15.88L13.17 12 9.29 8.12c-.39-.39-.39-1.02 0-1.41.39-.39 1.02-.39 1.41 0l4.59 4.59c.39.39.39 1.02 0 1.41L10.7 17.3c-.39.39-1.02.39-1.41 0-.38-.39-.39-1.03 0-1.42z"
-              />
-            </svg>
-            <span class="date-picker__vhidden">${this.localization.nextMonthLabel}</span>
+
+          <button class="next" @click=${this.handleNextMonthClick} ?disabled=${nextMonthDisabled} type="button">
+            ${nextMonth}
+            <span class="v-hidden">${this.localization.nextMonthLabel}</span>
           </button>
         </div>
       </div>
 
-      ${DatePickerMonth({
-        dateFormatter: this.dateFormatShort,
-        selectedDate: valueAsDate,
-        focusedDate: this.focusedDay,
-        onDateSelect: this.handleDaySelect,
-        onKeyboardNavigation: this.handleKeyboardNavigation,
-        labelledById: this.dialogLabelId,
-        localization: this.localization,
-        firstDayOfWeek: this.firstDayOfWeek,
-        min: minDate,
-        max: maxDate,
-        isDateDisabled: this.isDateDisabled,
-      })}
+      <table aria-labelledby="dialog-label">
+        <thead>
+          <tr>
+            ${mapWithOffset(
+              this.localization.dayNames,
+              this.firstDayOfWeek,
+              dayName =>
+                html`
+                  <th scope="col">
+                    <span aria-hidden="true">${dayName.substring(0, 2)}</span>
+                    <span class="v-hidden">${dayName}</span>
+                  </th>
+                `
+            )}
+          </tr>
+        </thead>
+        <tbody @keydown=${this.handleKeyboardNavigation}>
+          ${chunk(days, 7).map(
+            week => html`
+              <tr>
+                ${week.map(
+                  day => html`
+                    <td>
+                      <button
+                        type="button"
+                        class=${classMap({
+                          day: true,
+                          'is-month': isEqualMonth(day, this.focusedDay),
+                        })}
+                        tabindex=${isEqual(day, this.focusedDay) ? 0 : -1}
+                        @click=${() => this.handleDaySelect(day)}
+                        ?disabled=${!dateInRange(day, minDate, maxDate)}
+                        aria-disabled=${ifDefined(this.isDateDisabled(day) ? 'true' : undefined)}
+                        aria-label=${this.dateFormatShort.format(day)}
+                        aria-pressed=${isEqual(day, valueAsDate) ? 'true' : 'false'}
+                        aria-current=${ifDefined(isEqual(day, today) ? 'date' : undefined)}
+                      >
+                        <span aria-hidden="true">${day.getDate()}</span>
+                      </button>
+                    </td>
+                  `
+                )}
+              </tr>
+            `
+          )}
+        </tbody>
+      </table>
     `;
   }
 
-  /**
-   * Local methods.
-   */
   private enableActiveFocus = () => {
     this.activeFocus = true;
   };
@@ -369,7 +358,7 @@ export class Calendar extends LitElement {
   };
 
   private handleDaySelect = (day: Date) => {
-    const isInRange = inRange(day, parseISODate(this.min), parseISODate(this.max));
+    const isInRange = dateInRange(day, parseISODate(this.min), parseISODate(this.max));
     const isAllowed = !this.isDateDisabled(day);
 
     if (isInRange && isAllowed) {
