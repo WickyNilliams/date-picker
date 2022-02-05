@@ -20,8 +20,9 @@ import {
   startOfMonth,
   startOfWeek,
 } from '../utils/date.js';
+import { DirController } from '../utils/DirController.js';
 import { SwipeController } from '../utils/SwipeController.js';
-import { dropdown, nextMonth, prevMonth } from './icons.js';
+import { downChevron, rightChevron, leftChevron } from './icons.js';
 import { en } from './localization.js';
 import { style } from './style.css.js';
 
@@ -47,7 +48,9 @@ export class Calendar extends LitElement {
   @query(`table`) private tableNode!: HTMLTableElement;
 
   private dateFormatShort!: Intl.DateTimeFormat;
-  private swipeController = new SwipeController(this, {
+
+  private direction = new DirController(this);
+  private swipe = new SwipeController(this, {
     target: () => this.tableNode,
     onSwipeEnd: ({ distanceX, distanceY }) => {
       const isHorizontalSwipe = Math.abs(distanceX) >= 70 && Math.abs(distanceY) <= 70;
@@ -173,7 +176,7 @@ export class Calendar extends LitElement {
             </select>
             <div class="select-label" aria-hidden="true">
               <span>${this.localization.monthNamesShort[focusedMonth]}</span>
-              ${dropdown}
+              ${downChevron}
             </div>
           </div>
 
@@ -189,19 +192,19 @@ export class Calendar extends LitElement {
             </select>
             <div class="select-label" aria-hidden="true">
               <span>${this.focusedDay.getFullYear()}</span>
-              ${dropdown}
+              ${downChevron}
             </div>
           </div>
         </div>
 
         <div class="nav">
           <button @click=${this.handlePreviousMonthClick} ?disabled=${prevMonthDisabled} type="button">
-            ${prevMonth}
+            ${this.direction.isLTR ? leftChevron : rightChevron}
             <span class="v-hidden">${this.localization.prevMonthLabel}</span>
           </button>
 
           <button @click=${this.handleNextMonthClick} ?disabled=${nextMonthDisabled} type="button">
-            ${nextMonth}
+            ${this.direction.isLTR ? rightChevron : leftChevron}
             <span class="v-hidden">${this.localization.nextMonthLabel}</span>
           </button>
         </div>
@@ -316,12 +319,14 @@ export class Calendar extends LitElement {
   };
 
   private handleKeyboardNavigation = (event: KeyboardEvent) => {
+    const { isLTR } = this.direction;
+
     switch (event.keyCode) {
       case keyCode.RIGHT:
-        this.addDays(1);
+        this.addDays(isLTR ? 1 : -1);
         break;
       case keyCode.LEFT:
-        this.addDays(-1);
+        this.addDays(isLTR ? -1 : 1);
         break;
       case keyCode.DOWN:
         this.addDays(7);

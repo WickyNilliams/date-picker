@@ -1,6 +1,7 @@
 {
   "customSyntax": "postcss-lit",
   "extends": ["stylelint-config-standard"],
+  "plugins": ["stylelint-use-logical-spec"],
   "rules": {
     "comment-whitespace-inside": null,
     "property-no-vendor-prefix": [
@@ -15,6 +16,7 @@
         "ignoreSelectors": ["::-webkit-input-placeholder", ":-moz-placeholder", ":-ms-input-placeholder"]
       }
     ],
-    "string-quotes": "single"
+    "string-quotes": "single",
+    "liberty/use-logical-spec": true
   }
 }

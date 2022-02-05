@@ -13,7 +13,7 @@ export const style = css`
     font-weight: var(--date-picker-font-normal);
     line-height: 1.25;
     text-align: center;
-    width: 100%;
+    inline-size: 100%;
   }
 
   th {
@@ -21,7 +21,7 @@ export const style = css`
     font-weight: var(--date-picker-font-bold);
     letter-spacing: 1px;
     line-height: 1.25;
-    padding-bottom: 8px;
+    padding-block-end: 8px;
     text-decoration: none;
     text-transform: uppercase;
   }
@@ -44,13 +44,13 @@ export const style = css`
     font-size: 0.875rem;
     font-variant-numeric: tabular-nums;
     font-weight: var(--date-picker-font-normal);
-    height: 36px;
+    block-size: 36px;
     line-height: 1.25;
     padding: 0 0 1px;
     position: relative;
     text-align: center;
     vertical-align: middle;
-    width: 36px;
+    inline-size: 36px;
     z-index: 1;
   }
 
@@ -64,13 +64,10 @@ export const style = css`
   .day[aria-current='date']::before {
     background: var(--date-picker-color-primary);
     border-radius: 50%;
-    bottom: 0;
     content: '';
-    left: 0;
     opacity: 0.06;
     position: absolute;
-    right: 0;
-    top: 0;
+    inset: 0;
   }
 
   .day[aria-pressed='true'],
@@ -140,8 +137,8 @@ export const style = css`
     align-items: center;
     display: flex;
     justify-content: space-between;
-    margin-bottom: 16px;
-    width: 100%;
+    margin-block-end: 16px;
+    inline-size: 100%;
   }
 
   /* ---------------------------------------------
@@ -163,18 +160,18 @@ export const style = css`
     color: var(--date-picker-color-text);
     cursor: pointer;
     display: inline-flex;
-    height: 32px;
+    block-size: 32px;
     justify-content: center;
-    margin-left: 8px;
+    margin-inline-start: 8px;
     padding: 0;
     transition: background-color 300ms ease;
-    width: 32px;
+    inline-size: 32px;
   }
 
   @media (max-width: 35.9375em) {
     .nav button {
-      height: 40px;
-      width: 40px;
+      block-size: 40px;
+      inline-size: 40px;
     }
   }
 
@@ -193,8 +190,8 @@ export const style = css`
   }
 
   .nav svg {
-    height: 21px;
-    width: 21px;
+    block-size: 21px;
+    inline-size: 21px;
     margin: 0 auto;
   }
 
@@ -204,19 +201,19 @@ export const style = css`
 
   .select {
     display: inline-flex;
-    margin-top: 4px;
+    margin-block-start: 4px;
     position: relative;
   }
 
   .select select {
     cursor: pointer;
     font-size: 1rem;
-    height: 100%;
-    left: 0;
+    block-size: 100%;
+    inset-inline-start: 0;
     opacity: 0;
     position: absolute;
-    top: 0;
-    width: 100%;
+    inset-block-start: 0;
+    inline-size: 100%;
     z-index: 2;
   }
 
@@ -231,17 +228,17 @@ export const style = css`
     padding: 0 4px 0 8px;
     pointer-events: none;
     position: relative;
-    width: 100%;
+    inline-size: 100%;
     z-index: 1;
   }
 
   .select-label span {
-    margin-right: 4px;
+    margin-inline-end: 4px;
   }
 
   .select-label svg {
-    width: 16px;
-    height: 16px;
+    inline-size: 16px;
+    block-size: 16px;
   }
 
   .select select:focus + .select-label {
@@ -255,11 +252,11 @@ export const style = css`
   .v-hidden {
     border: 0;
     clip: rect(1px, 1px, 1px, 1px);
-    height: 1px;
+    block-size: 1px;
     overflow: hidden;
     padding: 0;
     position: absolute;
-    top: 0;
-    width: 1px;
+    inset-block-start: 0;
+    inline-size: 1px;
   }
 `;

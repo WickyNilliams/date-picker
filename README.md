@@ -10,7 +10,7 @@ Todo:
 - [x] Add support for formdata event
 - [ ] Port test suite to web-test-runner/mocha
 - [x] Extract calendar component
-- [ ] RTL support
+- [x] RTL support
 - [ ] Perhaps support slotting your own input?
 - [ ] Decide on project/tag name
 

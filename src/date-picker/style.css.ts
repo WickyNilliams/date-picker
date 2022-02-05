@@ -11,8 +11,8 @@ export const style = css`
     font-family: var(--date-picker-font);
     margin: 0;
     position: relative;
-    text-align: left;
-    width: 100%;
+    text-align: start;
+    inline-size: 100%;
   }
 
   *,
@@ -20,7 +20,7 @@ export const style = css`
   *::after {
     box-sizing: border-box;
     margin: 0;
-    width: auto;
+    inline-size: auto;
   }
 
   /* ---------------------------------------------
@@ -38,8 +38,9 @@ export const style = css`
     font-family: var(--date-picker-font);
     font-size: 100%;
     line-height: normal;
-    padding: 14px 60px 14px 14px;
-    width: 100%;
+    padding: 14px;
+    padding-inline-end: 60px;
+    inline-size: 100%;
   }
 
   input:focus {
@@ -64,7 +65,7 @@ export const style = css`
 
   .input-wrapper {
     position: relative;
-    width: 100%;
+    inline-size: 100%;
   }
 
   /* ---------------------------------------------
@@ -80,20 +81,20 @@ export const style = css`
     background: var(--date-picker-color-button);
     border: 0;
     border-radius: 0;
-    border-bottom-right-radius: var(--date-picker-radius);
-    border-top-right-radius: var(--date-picker-radius);
+    border-end-end-radius: var(--date-picker-radius);
+    border-start-end-radius: var(--date-picker-radius);
     box-shadow: inset 1px 0 0 rgb(0 0 0 / 10%);
     color: var(--date-picker-color-text);
     cursor: pointer;
     display: flex;
-    height: calc(100% - 2px);
+    block-size: calc(100% - 2px);
     justify-content: center;
     padding: 0;
     position: absolute;
-    right: 1px;
-    top: 1px;
+    inset-inline-end: 1px;
+    inset-block-start: 1px;
     user-select: none;
-    width: 48px;
+    inline-size: 48px;
     z-index: 2;
   }
 
@@ -115,16 +116,16 @@ export const style = css`
 
   [role='dialog'] {
     display: flex;
-    left: 0;
-    min-width: 320px;
+    inset-inline-start: 0;
+    min-inline-size: 320px;
     opacity: 0;
     position: absolute;
-    top: 100%;
+    inset-block-start: 100%;
     transform: scale(0.96) translateZ(0) translateY(-20px);
     transform-origin: top right;
     transition: transform 300ms ease, opacity 300ms ease, visibility 300ms ease;
     visibility: hidden;
-    width: 100%;
+    inline-size: 100%;
     will-change: transform, opacity, visibility;
     z-index: var(--date-picker-z-index);
   }
@@ -132,19 +133,17 @@ export const style = css`
   @media (max-width: 35.9375em) {
     [role='dialog'] {
       background: var(--date-picker-color-overlay);
-      bottom: 0;
+      inset-block: 0;
       position: fixed;
-      right: 0;
-      top: 0;
+      inset-inline-end: 0;
       transform: translateZ(0);
       transform-origin: bottom center;
     }
   }
 
   [role='dialog'].is-left {
-    left: auto;
-    right: 0;
-    width: auto;
+    inset-inline: auto 0;
+    inline-size: auto;
   }
 
   [role='dialog'][aria-hidden='false'] {
@@ -163,14 +162,14 @@ export const style = css`
     border: 1px solid rgb(0 0 0 / 10%);
     border-radius: var(--date-picker-radius);
     box-shadow: 0 4px 10px 0 rgb(0 0 0 / 10%);
-    margin-left: auto;
-    margin-top: 8px;
-    max-width: 310px;
-    min-width: 290px;
+    margin-inline-start: auto;
+    margin-block-start: 8px;
+    max-inline-size: 310px;
+    min-inline-size: 290px;
     padding: 16px 16px 20px;
     position: relative;
     transform: none;
-    width: 100%;
+    inline-size: 100%;
     z-index: var(--date-picker-z-index);
   }
 
@@ -178,13 +177,13 @@ export const style = css`
     .dialog-content {
       border: 0;
       border-radius: 0;
-      border-top-left-radius: var(--date-picker-radius);
-      border-top-right-radius: var(--date-picker-radius);
-      bottom: 0;
-      left: 0;
+      border-start-start-radius: var(--date-picker-radius);
+      border-start-end-radius: var(--date-picker-radius);
+      inset-block-end: 0;
+      inset-inline-start: 0;
       margin: 0;
-      max-width: none;
-      min-height: 26em;
+      max-inline-size: none;
+      min-block-size: 26em;
       opacity: 0;
       padding: 0 8% 20px;
       position: absolute;
@@ -207,23 +206,23 @@ export const style = css`
 
   .mobile {
     align-items: center;
-    border-bottom: 1px solid rgb(0 0 0 / 12%);
+    border-block-end: 1px solid rgb(0 0 0 / 12%);
     display: flex;
     justify-content: space-between;
-    margin-bottom: 20px;
-    margin-left: -10%;
+    margin-block-end: 20px;
+    margin-inline-start: -10%;
     overflow: hidden;
     padding: 12px 20px;
     position: relative;
     text-overflow: ellipsis;
     white-space: nowrap;
-    width: 120%;
+    inline-size: 120%;
   }
 
   .mobile-heading {
     display: inline-block;
     font-weight: var(--date-picker-font-bold);
-    max-width: 84%;
+    max-inline-size: 84%;
     overflow: hidden;
     text-overflow: ellipsis;
     white-space: nowrap;
@@ -236,9 +235,9 @@ export const style = css`
       overflow: visible;
       padding: 0;
       position: absolute;
-      right: -8px;
-      top: -8px;
-      width: auto;
+      inset-inline-end: -8px;
+      inset-block-start: -8px;
+      inline-size: auto;
     }
 
     .mobile-heading {
@@ -260,10 +259,10 @@ export const style = css`
     color: var(--date-picker-color-text);
     cursor: pointer;
     display: flex;
-    height: 24px;
+    block-size: 24px;
     justify-content: center;
     padding: 0;
-    width: 24px;
+    inline-size: 24px;
   }
 
   .close:focus {
@@ -292,11 +291,11 @@ export const style = css`
   .v-hidden {
     border: 0;
     clip: rect(1px, 1px, 1px, 1px);
-    height: 1px;
+    block-size: 1px;
     overflow: hidden;
     padding: 0;
     position: absolute;
-    top: 0;
-    width: 1px;
+    inset-block-start: 0;
+    inline-size: 1px;
   }
 `;
