@@ -9,6 +9,7 @@ import { style } from './style.css.js';
 import '../calendar/date-calendar.js';
 import { Calendar } from '../calendar/Calendar.js';
 import { FormDataController } from '../utils/FormDataController.js';
+import { SwipeController } from '../utils/SwipeController.js';
 
 function cleanValue(input: HTMLInputElement, regex: RegExp): string {
   const { value } = input;
@@ -37,13 +38,24 @@ export class DatePicker extends LitElement {
   static shadowRootOptions = { ...LitElement.shadowRootOptions, delegatesFocus: true };
 
   @query(`.date-picker__toggle`, true) private datePickerButton!: HTMLButtonElement;
-  @query(`.date-picker__input`, true) private datePickerInput!: HTMLInputElement;
   @query(`.date-picker__close`, true) private closeButton!: HTMLButtonElement;
   @query(`date-calendar`, true) private calendar!: Calendar;
+  @query(`[role="dialog"]`, true) private dialog!: HTMLElement;
 
   private formData = new FormDataController(this);
-  private initialTouchX = 0;
-  private initialTouchY = 0;
+  private swipeController = new SwipeController(this, {
+    target: () => this.dialog,
+    onSwipeEnd: ({ distanceX, distanceY }) => {
+      const threshold = 70;
+      const isDownwardsSwipe = Math.abs(distanceY) >= threshold && Math.abs(distanceX) <= threshold && distanceY > 0;
+
+      if (isDownwardsSwipe) {
+        this.hide(false);
+        // todo: prevent scrolling?
+        // event.preventDefault();
+      }
+    },
+  });
 
   /**
    * Whilst dateAdapter is used for handling the formatting/parsing dates in the input,
@@ -231,9 +243,6 @@ export class DatePicker extends LitElement {
           aria-modal="true"
           aria-hidden=${this.open ? 'false' : 'true'}
           aria-labelledby="dialog-heading"
-          @touchmove=${this.handleTouchMove}
-          @touchstart=${this.handleTouchStart}
-          @touchend=${this.handleTouchEnd}
         >
           <div class="date-picker__dialog-content" @keydown=${this.handleEscKey}>
             <div tabindex="0" @focus=${this.focusLast}></div>
@@ -303,30 +312,6 @@ export class DatePicker extends LitElement {
     this.dispatchEvent(new CustomEvent('date-picker-focus'));
   };
 
-  private handleTouchStart = (event: TouchEvent) => {
-    const touch = event.changedTouches[0];
-    this.initialTouchX = touch.pageX;
-    this.initialTouchY = touch.pageY;
-  };
-
-  private handleTouchMove = (event: TouchEvent) => {
-    event.preventDefault();
-  };
-
-  private handleTouchEnd = (event: TouchEvent) => {
-    const touch = event.changedTouches[0];
-    const distX = touch.pageX - this.initialTouchX; // get horizontal dist traveled
-    const distY = touch.pageY - this.initialTouchY; // get vertical dist traveled
-    const threshold = 70;
-
-    const isDownwardsSwipe = Math.abs(distY) >= threshold && Math.abs(distX) <= threshold && distY > 0;
-
-    if (isDownwardsSwipe) {
-      this.hide(false);
-      event.preventDefault();
-    }
-  };
-
   private focusFirst = () => {
     this.closeButton.focus();
   };
@@ -335,8 +320,8 @@ export class DatePicker extends LitElement {
     this.calendar.focus();
   };
 
-  private handleInputChange = () => {
-    const target = this.datePickerInput as HTMLInputElement;
+  private handleInputChange = (e: Event) => {
+    const target = e.target as HTMLInputElement;
 
     // clean up any invalid characters
     cleanValue(target, DISALLOWED_CHARACTERS);

@@ -14,6 +14,7 @@ import {
   startOfMonth,
   startOfWeek,
 } from '../utils/date.js';
+import { SwipeController } from '../utils/SwipeController.js';
 import { en } from './localization.js';
 import { DatePickerMonth } from './month.js';
 import { style } from './style.css.js';
@@ -49,11 +50,21 @@ export class Calendar extends LitElement {
 
   @query('.date-picker__select--month', true) private monthSelectNode!: HTMLElement;
   @query(`[aria-pressed][tabindex="0"]`) private focusedDayNode!: HTMLButtonElement;
+  @query(`table`) private tableNode!: HTMLTableElement;
 
   private dateFormatShort!: Intl.DateTimeFormat;
+  private swipeController = new SwipeController(this, {
+    target: () => this.tableNode,
+    onSwipeEnd: ({ distanceX, distanceY }) => {
+      const isHorizontalSwipe = Math.abs(distanceX) >= 70 && Math.abs(distanceY) <= 70;
 
-  private initialTouchX = 0;
-  private initialTouchY = 0;
+      if (isHorizontalSwipe) {
+        this.addMonths(distanceX < 0 ? 1 : -1);
+        // todo: prevent scrolling?
+        // event.preventDefault();
+      }
+    },
+  });
 
   @state() focusedDay = new Date();
   @state() activeFocus = false;
@@ -135,124 +146,122 @@ export class Calendar extends LitElement {
     const maxYear = maxDate ? maxDate.getFullYear() : selectedYear + 10;
 
     return html`
-      <div @touchmove=${this.handleTouchMove} @touchstart=${this.handleTouchStart} @touchend=${this.handleTouchEnd}>
-        <div class="date-picker__header" @focusin=${this.disableActiveFocus}>
-          <div>
-            <h2 id=${this.dialogLabelId} class="date-picker__vhidden" aria-live="polite" aria-atomic="true">
-              ${this.localization.monthNames[focusedMonth]} ${this.focusedDay.getFullYear()}
-            </h2>
+      <div class="date-picker__header" @focusin=${this.disableActiveFocus}>
+        <div>
+          <h2 id=${this.dialogLabelId} class="date-picker__vhidden" aria-live="polite" aria-atomic="true">
+            ${this.localization.monthNames[focusedMonth]} ${this.focusedDay.getFullYear()}
+          </h2>
 
-            <div class="date-picker__select">
-              <select
-                aria-label=${this.localization.monthSelectLabel}
-                class="date-picker__select--month"
-                @change=${this.handleMonthSelect}
-              >
-                ${this.localization.monthNames.map(
-                  (month, i) =>
-                    html`<option
-                      key=${month}
-                      value=${i}
-                      ?selected=${i === focusedMonth}
-                      ?disabled=${!inRange(
-                        new Date(focusedYear, i, 1),
-                        minDate ? startOfMonth(minDate) : undefined,
-                        maxDate ? endOfMonth(maxDate) : undefined
-                      )}
-                    >
-                      ${month}
-                    </option>`
-                )}
-              </select>
-              <div class="date-picker__select-label" aria-hidden="true">
-                <span>${this.localization.monthNamesShort[focusedMonth]}</span>
-                <svg fill="currentColor" xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24">
-                  <path
-                    d="M8.12 9.29L12 13.17l3.88-3.88c.39-.39 1.02-.39 1.41 0 .39.39.39 1.02 0 1.41l-4.59 4.59c-.39.39-1.02.39-1.41 0L6.7 10.7c-.39-.39-.39-1.02 0-1.41.39-.38 1.03-.39 1.42 0z"
-                  />
-                </svg>
-              </div>
-            </div>
-
-            <div class="date-picker__select">
-              <select
-                aria-label=${this.localization.yearSelectLabel}
-                class="date-picker__select--year"
-                @change=${this.handleYearSelect}
-              >
-                ${range(minYear, maxYear).map(
-                  year => html`<option key=${year} ?selected=${year === focusedYear}>${year}</option>`
-                )}
-              </select>
-              <div class="date-picker__select-label" aria-hidden="true">
-                <span>${this.focusedDay.getFullYear()}</span>
-                <svg fill="currentColor" xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24">
-                  <path
-                    d="M8.12 9.29L12 13.17l3.88-3.88c.39-.39 1.02-.39 1.41 0 .39.39.39 1.02 0 1.41l-4.59 4.59c-.39.39-1.02.39-1.41 0L6.7 10.7c-.39-.39-.39-1.02 0-1.41.39-.38 1.03-.39 1.42 0z"
-                  />
-                </svg>
-              </div>
+          <div class="date-picker__select">
+            <select
+              aria-label=${this.localization.monthSelectLabel}
+              class="date-picker__select--month"
+              @change=${this.handleMonthSelect}
+            >
+              ${this.localization.monthNames.map(
+                (month, i) =>
+                  html`<option
+                    key=${month}
+                    value=${i}
+                    ?selected=${i === focusedMonth}
+                    ?disabled=${!inRange(
+                      new Date(focusedYear, i, 1),
+                      minDate ? startOfMonth(minDate) : undefined,
+                      maxDate ? endOfMonth(maxDate) : undefined
+                    )}
+                  >
+                    ${month}
+                  </option>`
+              )}
+            </select>
+            <div class="date-picker__select-label" aria-hidden="true">
+              <span>${this.localization.monthNamesShort[focusedMonth]}</span>
+              <svg fill="currentColor" xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24">
+                <path
+                  d="M8.12 9.29L12 13.17l3.88-3.88c.39-.39 1.02-.39 1.41 0 .39.39.39 1.02 0 1.41l-4.59 4.59c-.39.39-1.02.39-1.41 0L6.7 10.7c-.39-.39-.39-1.02 0-1.41.39-.38 1.03-.39 1.42 0z"
+                />
+              </svg>
             </div>
           </div>
 
-          <div class="date-picker__nav">
-            <button
-              class="date-picker__prev"
-              @click=${this.handlePreviousMonthClick}
-              ?disabled=${prevMonthDisabled}
-              type="button"
+          <div class="date-picker__select">
+            <select
+              aria-label=${this.localization.yearSelectLabel}
+              class="date-picker__select--year"
+              @change=${this.handleYearSelect}
             >
-              <svg
-                aria-hidden="true"
-                fill="currentColor"
-                xmlns="http://www.w3.org/2000/svg"
-                width="21"
-                height="21"
-                viewBox="0 0 24 24"
-              >
+              ${range(minYear, maxYear).map(
+                year => html`<option key=${year} ?selected=${year === focusedYear}>${year}</option>`
+              )}
+            </select>
+            <div class="date-picker__select-label" aria-hidden="true">
+              <span>${this.focusedDay.getFullYear()}</span>
+              <svg fill="currentColor" xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24">
                 <path
-                  d="M14.71 15.88L10.83 12l3.88-3.88c.39-.39.39-1.02 0-1.41-.39-.39-1.02-.39-1.41 0L8.71 11.3c-.39.39-.39 1.02 0 1.41l4.59 4.59c.39.39 1.02.39 1.41 0 .38-.39.39-1.03 0-1.42z"
+                  d="M8.12 9.29L12 13.17l3.88-3.88c.39-.39 1.02-.39 1.41 0 .39.39.39 1.02 0 1.41l-4.59 4.59c-.39.39-1.02.39-1.41 0L6.7 10.7c-.39-.39-.39-1.02 0-1.41.39-.38 1.03-.39 1.42 0z"
                 />
               </svg>
-              <span class="date-picker__vhidden">${this.localization.prevMonthLabel}</span>
-            </button>
-            <button
-              class="date-picker__next"
-              @click=${this.handleNextMonthClick}
-              ?disabled=${nextMonthDisabled}
-              type="button"
-            >
-              <svg
-                aria-hidden="true"
-                fill="currentColor"
-                xmlns="http://www.w3.org/2000/svg"
-                width="21"
-                height="21"
-                viewBox="0 0 24 24"
-              >
-                <path
-                  d="M9.29 15.88L13.17 12 9.29 8.12c-.39-.39-.39-1.02 0-1.41.39-.39 1.02-.39 1.41 0l4.59 4.59c.39.39.39 1.02 0 1.41L10.7 17.3c-.39.39-1.02.39-1.41 0-.38-.39-.39-1.03 0-1.42z"
-                />
-              </svg>
-              <span class="date-picker__vhidden">${this.localization.nextMonthLabel}</span>
-            </button>
+            </div>
           </div>
         </div>
 
-        ${DatePickerMonth({
-          dateFormatter: this.dateFormatShort,
-          selectedDate: valueAsDate,
-          focusedDate: this.focusedDay,
-          onDateSelect: this.handleDaySelect,
-          onKeyboardNavigation: this.handleKeyboardNavigation,
-          labelledById: this.dialogLabelId,
-          localization: this.localization,
-          firstDayOfWeek: this.firstDayOfWeek,
-          min: minDate,
-          max: maxDate,
-          isDateDisabled: this.isDateDisabled,
-        })}
+        <div class="date-picker__nav">
+          <button
+            class="date-picker__prev"
+            @click=${this.handlePreviousMonthClick}
+            ?disabled=${prevMonthDisabled}
+            type="button"
+          >
+            <svg
+              aria-hidden="true"
+              fill="currentColor"
+              xmlns="http://www.w3.org/2000/svg"
+              width="21"
+              height="21"
+              viewBox="0 0 24 24"
+            >
+              <path
+                d="M14.71 15.88L10.83 12l3.88-3.88c.39-.39.39-1.02 0-1.41-.39-.39-1.02-.39-1.41 0L8.71 11.3c-.39.39-.39 1.02 0 1.41l4.59 4.59c.39.39 1.02.39 1.41 0 .38-.39.39-1.03 0-1.42z"
+              />
+            </svg>
+            <span class="date-picker__vhidden">${this.localization.prevMonthLabel}</span>
+          </button>
+          <button
+            class="date-picker__next"
+            @click=${this.handleNextMonthClick}
+            ?disabled=${nextMonthDisabled}
+            type="button"
+          >
+            <svg
+              aria-hidden="true"
+              fill="currentColor"
+              xmlns="http://www.w3.org/2000/svg"
+              width="21"
+              height="21"
+              viewBox="0 0 24 24"
+            >
+              <path
+                d="M9.29 15.88L13.17 12 9.29 8.12c-.39-.39-.39-1.02 0-1.41.39-.39 1.02-.39 1.41 0l4.59 4.59c.39.39.39 1.02 0 1.41L10.7 17.3c-.39.39-1.02.39-1.41 0-.38-.39-.39-1.03 0-1.42z"
+              />
+            </svg>
+            <span class="date-picker__vhidden">${this.localization.nextMonthLabel}</span>
+          </button>
+        </div>
       </div>
+
+      ${DatePickerMonth({
+        dateFormatter: this.dateFormatShort,
+        selectedDate: valueAsDate,
+        focusedDate: this.focusedDay,
+        onDateSelect: this.handleDaySelect,
+        onKeyboardNavigation: this.handleKeyboardNavigation,
+        labelledById: this.dialogLabelId,
+        localization: this.localization,
+        firstDayOfWeek: this.firstDayOfWeek,
+        min: minDate,
+        max: maxDate,
+        isDateDisabled: this.isDateDisabled,
+      })}
     `;
   }
 
@@ -306,29 +315,6 @@ export class Calendar extends LitElement {
   private setFocusedDay(day: Date) {
     this.focusedDay = clamp(day, parseISODate(this.min), parseISODate(this.max));
   }
-
-  private handleTouchStart = (event: TouchEvent) => {
-    const touch = event.changedTouches[0];
-    this.initialTouchX = touch.pageX;
-    this.initialTouchY = touch.pageY;
-  };
-
-  private handleTouchMove = (event: TouchEvent) => {
-    event.preventDefault();
-  };
-
-  private handleTouchEnd = (event: TouchEvent) => {
-    const touch = event.changedTouches[0];
-    const distX = touch.pageX - this.initialTouchX; // get horizontal dist traveled
-    const distY = touch.pageY - this.initialTouchY; // get vertical dist traveled
-    const threshold = 70;
-
-    const isHorizontalSwipe = Math.abs(distX) >= threshold && Math.abs(distY) <= threshold;
-
-    if (isHorizontalSwipe) {
-      this.addMonths(distX < 0 ? 1 : -1);
-    }
-  };
 
   private handleNextMonthClick = (event: MouseEvent) => {
     event.preventDefault();
