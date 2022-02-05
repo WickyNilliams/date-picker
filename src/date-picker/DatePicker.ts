@@ -55,8 +55,6 @@ export class DatePicker extends LitElement {
    */
   private dateFormatLong!: Intl.DateTimeFormat;
 
-  @state() activeFocus = false;
-  @state() focusedDay = new Date();
   @state() open = false;
 
   /**
@@ -203,16 +201,79 @@ export class DatePicker extends LitElement {
     }
   }
 
-  /**
-   * Local methods.
-   */
-  // private enableActiveFocus = () => {
-  //   this.activeFocus = true;
-  // };
+  render() {
+    const valueAsDate = parseISODate(this.value);
+    const formattedDate = valueAsDate ? this.dateAdapter.format(valueAsDate) : '';
 
-  // private disableActiveFocus = () => {
-  //   this.activeFocus = false;
-  // };
+    return html`
+      <div class="date-picker">
+        ${DatePickerInput({
+          dateFormatter: this.dateFormatLong!,
+          valueAsDate,
+          formattedValue: formattedDate,
+          onInput: this.handleInputChange,
+          onBlur: this.handleBlur,
+          onFocus: this.handleFocus,
+          onClick: this.toggleOpen,
+          name: this.name,
+          disabled: this.disabled,
+          required: this.required,
+          localization: this.localization,
+        })}
+
+        <div
+          class=${classMap({
+            'date-picker__dialog': true,
+            'is-left': this.direction === 'left',
+            'is-active': this.open,
+          })}
+          role="dialog"
+          aria-modal="true"
+          aria-hidden=${this.open ? 'false' : 'true'}
+          aria-labelledby="dialog-heading"
+          @touchmove=${this.handleTouchMove}
+          @touchstart=${this.handleTouchStart}
+          @touchend=${this.handleTouchEnd}
+        >
+          <div class="date-picker__dialog-content" @keydown=${this.handleEscKey}>
+            <div tabindex="0" @focus=${this.focusLast}></div>
+
+            <div class="date-picker__mobile">
+              <div id="dialog-heading" class="date-picker__mobile-heading">${this.localization.calendarHeading}</div>
+              <button class="date-picker__close" @click=${() => this.hide()} type="button">
+                <svg
+                  aria-hidden="true"
+                  fill="currentColor"
+                  xmlns="http://www.w3.org/2000/svg"
+                  width="16"
+                  height="16"
+                  viewBox="0 0 24 24"
+                >
+                  <path d="M0 0h24v24H0V0z" fill="none" />
+                  <path
+                    d="M18.3 5.71c-.39-.39-1.02-.39-1.41 0L12 10.59 7.11 5.7c-.39-.39-1.02-.39-1.41 0-.39.39-.39 1.02 0 1.41L10.59 12 5.7 16.89c-.39.39-.39 1.02 0 1.41.39.39 1.02.39 1.41 0L12 13.41l4.89 4.89c.39.39 1.02.39 1.41 0 .39-.39.39-1.02 0-1.41L13.41 12l4.89-4.89c.38-.38.38-1.02 0-1.4z"
+                  />
+                </svg>
+                <span class="date-picker__vhidden">${this.localization.closeLabel}</span>
+              </button>
+            </div>
+
+            <date-calendar
+              value=${this.value}
+              @calendar-change=${this.handleDaySelect}
+              min=${this.min}
+              max=${this.max}
+              first-day-of-week=${this.firstDayOfWeek}
+              .localization=${this.localization}
+              .isDateDisabled=${this.isDateDisabled}
+            ></date-calendar>
+
+            <div tabindex="0" @focus=${this.focusFirst}></div>
+          </div>
+        </div>
+      </div>
+    `;
+  }
 
   private toggleOpen = (e: Event) => {
     e.preventDefault();
@@ -302,79 +363,5 @@ export class DatePicker extends LitElement {
         },
       })
     );
-  }
-
-  render() {
-    const valueAsDate = parseISODate(this.value);
-    const formattedDate = valueAsDate ? this.dateAdapter.format(valueAsDate) : '';
-
-    return html`
-      <div class="date-picker">
-        ${DatePickerInput({
-          dateFormatter: this.dateFormatLong!,
-          valueAsDate,
-          formattedValue: formattedDate,
-          onInput: this.handleInputChange,
-          onBlur: this.handleBlur,
-          onFocus: this.handleFocus,
-          onClick: this.toggleOpen,
-          name: this.name,
-          disabled: this.disabled,
-          required: this.required,
-          localization: this.localization,
-        })}
-
-        <div
-          class=${classMap({
-            'date-picker__dialog': true,
-            'is-left': this.direction === 'left',
-            'is-active': this.open,
-          })}
-          role="dialog"
-          aria-modal="true"
-          aria-hidden=${this.open ? 'false' : 'true'}
-          aria-labelledby="dialog-heading"
-          @touchmove=${this.handleTouchMove}
-          @touchstart=${this.handleTouchStart}
-          @touchend=${this.handleTouchEnd}
-        >
-          <div class="date-picker__dialog-content" @keydown=${this.handleEscKey}>
-            <div tabindex="0" @focus=${this.focusLast}></div>
-
-            <div class="date-picker__mobile">
-              <div id="dialog-heading" class="date-picker__mobile-heading">${this.localization.calendarHeading}</div>
-              <button class="date-picker__close" @click=${() => this.hide()} type="button">
-                <svg
-                  aria-hidden="true"
-                  fill="currentColor"
-                  xmlns="http://www.w3.org/2000/svg"
-                  width="16"
-                  height="16"
-                  viewBox="0 0 24 24"
-                >
-                  <path d="M0 0h24v24H0V0z" fill="none" />
-                  <path
-                    d="M18.3 5.71c-.39-.39-1.02-.39-1.41 0L12 10.59 7.11 5.7c-.39-.39-1.02-.39-1.41 0-.39.39-.39 1.02 0 1.41L10.59 12 5.7 16.89c-.39.39-.39 1.02 0 1.41.39.39 1.02.39 1.41 0L12 13.41l4.89 4.89c.39.39 1.02.39 1.41 0 .39-.39.39-1.02 0-1.41L13.41 12l4.89-4.89c.38-.38.38-1.02 0-1.4z"
-                  />
-                </svg>
-                <span class="date-picker__vhidden">${this.localization.closeLabel}</span>
-              </button>
-            </div>
-
-            <date-calendar
-              value=${this.value}
-              @calendar-change=${this.handleDaySelect}
-              min=${this.min}
-              max=${this.max}
-              first-day-of-week=${this.firstDayOfWeek}
-              .localization=${this.localization}
-              .isDateDisabled=${this.isDateDisabled}
-            ></date-calendar>
-
-            <div tabindex="0" @focus=${this.focusFirst}></div>
-          </div>
-        </div>
-      </div>
-    `;
   }
 }
