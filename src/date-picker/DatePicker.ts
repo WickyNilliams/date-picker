@@ -1,6 +1,8 @@
 import { html, LitElement, nothing, PropertyValues } from 'lit';
 import { property, query, state } from 'lit/decorators.js';
 import { classMap } from 'lit/directives/class-map.js';
+import { ifDefined } from 'lit/directives/if-defined.js';
+
 import {
   printISODate,
   parseISODate,
@@ -260,6 +262,7 @@ export class DatePicker extends LitElement {
           @focus=${this.handleFocus}
           @blur=${this.handleBlur}
           autocomplete="off"
+          aria-invalid=${ifDefined(this.validity.valid ? undefined : 'false')}
         />
 
         <button class="toggle" @click=${this.toggleOpen} ?disabled=${this.disabled} type="button">
