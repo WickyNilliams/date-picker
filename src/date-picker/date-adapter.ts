@@ -7,10 +7,12 @@ export type DateFormatter = (date: Date) => string;
 export interface DateAdapter {
   parse: DateParser | RegExp;
   format: DateFormatter | string;
+  disallowedCharacters: RegExp | false;
 }
 
 const isoAdapter: DateAdapter = {
   parse: parseISODate,
   format: printISODate,
+  disallowedCharacters: /[^0-9-]/g,
 };
 export default isoAdapter;

@@ -70,10 +70,11 @@
 
       picker.addEventListener('date-picker-change', e => console.log(e.target.value));
 
-      // UK date format
+      // UK date format, permissively accepts: dd/mm/yyyy, dd-mm-yyyy, dd.mm.yyyy
       picker.dateAdapter = {
-        parse: /(?<day>\d{1,2})\/(?<month>\d{1,2})\/(?<year>\d{4})/,
+        parse: /(?<day>\d{1,2})[./-](?<month>\d{1,2})[./-](?<year>\d{4})/,
         format: 'dd/mm/yyyy',
+        disallowedCharacters: /[^0-9./-]/g,
       };
     </script>
   </body>

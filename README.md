@@ -17,7 +17,7 @@ Todo:
 - [x] add `valueAsNumber` property
 - [ ] add `validity` property
 - [x] simplify user parsing/formatting. named capture groups for parse? format string?
-- [ ] configurable allowed chars
+- [x] configurable disallowed chars
 
 ## Installation
 

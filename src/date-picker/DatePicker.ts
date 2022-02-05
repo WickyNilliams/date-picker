@@ -12,8 +12,6 @@ import { FormDataController } from '../utils/FormDataController.js';
 import { SwipeController } from '../utils/SwipeController.js';
 import { cleanValue } from '../utils/input.js';
 
-const DISALLOWED_CHARACTERS = /[^0-9./-]/g;
-
 export class DatePicker extends LitElement {
   static styles = style;
   static shadowRootOptions = { ...LitElement.shadowRootOptions, delegatesFocus: true };
@@ -330,9 +328,11 @@ export class DatePicker extends LitElement {
 
   private handleInputChange = (e: Event) => {
     const target = e.target as HTMLInputElement;
-
     const oldValue = this.value;
-    this.inputValue = cleanValue(target, DISALLOWED_CHARACTERS);
+
+    const { disallowedCharacters } = this.dateAdapter;
+    this.inputValue = disallowedCharacters ? cleanValue(target, disallowedCharacters) : target.value;
+
     const newValue = this.value;
 
     if (oldValue !== newValue) {
