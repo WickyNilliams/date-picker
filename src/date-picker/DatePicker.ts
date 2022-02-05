@@ -110,6 +110,23 @@ export class DatePicker extends LitElement {
    */
   @property({ attribute: false }) dateAdapter: DateAdapter = isoAdapter;
 
+  get valueAsDate(): Date | undefined {
+    return parseISODate(this.value);
+  }
+
+  set valueAsDate(date: Date | undefined) {
+    this.value = date ? printISODate(date) : '';
+  }
+
+  get valueAsNumber(): number {
+    const date = this.valueAsDate;
+    return date ? date.getTime() : NaN;
+  }
+
+  set valueAsNumber(date: number) {
+    this.value = printISODate(new Date(date));
+  }
+
   /**
    * Controls which days are disabled and therefore disallowed.
    * For example, this can be used to disallow selection of weekends.
@@ -181,7 +198,7 @@ export class DatePicker extends LitElement {
   }
 
   render() {
-    const valueAsDate = parseISODate(this.value);
+    const { valueAsDate } = this;
     const formattedDate = valueAsDate ? this.dateAdapter.format(valueAsDate) : '';
 
     return html`
@@ -300,14 +317,6 @@ export class DatePicker extends LitElement {
 
   private setValue(date?: Date) {
     this.value = date ? printISODate(date) : '';
-
-    this.dispatchEvent(
-      new CustomEvent('date-picker-change', {
-        detail: {
-          value: this.value,
-          valueAsDate: date,
-        },
-      })
-    );
+    this.dispatchEvent(new CustomEvent('date-picker-change'));
   }
 }
