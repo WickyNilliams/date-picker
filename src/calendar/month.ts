@@ -13,7 +13,7 @@ export type DatePickerDayProps = {
   inRange: boolean;
   isSelected: boolean;
   dateFormatter: Intl.DateTimeFormat;
-  onDaySelect: (event: MouseEvent, day: Date) => void;
+  onDaySelect: (day: Date) => void;
 };
 
 export function DatePickerDay({
@@ -31,10 +31,6 @@ export function DatePickerDay({
   const isFocused = isEqual(day, focusedDay);
   const isOutsideRange = !inRange;
 
-  function handleClick(e: MouseEvent) {
-    onDaySelect(e, day);
-  }
-
   return html`
     <button
       type="button"
@@ -46,7 +42,7 @@ export function DatePickerDay({
         'is-disabled': disabled,
       })}
       tabindex=${isFocused ? 0 : -1}
-      @click=${handleClick}
+      @click=${() => onDaySelect(day)}
       aria-disabled=${ifDefined(disabled ? 'true' : undefined)}
       ?disabled=${isOutsideRange}
       aria-label=${dateFormatter.format(day)}

@@ -93,23 +93,22 @@ export class Calendar extends LitElement {
    */
   @property() isDateDisabled: (date: Date) => boolean = () => false;
 
+  focus(options: FocusOptions & { target: 'day' | 'month' } = { target: 'day' }) {
+    const { target } = options;
+
+    if (target === 'day') {
+      this.focusedDayNode.focus(options);
+    } else if (target === 'month') {
+      this.monthSelectNode.focus(options);
+    }
+  }
+
   protected willUpdate(_changedProperties: Map<string | number | symbol, unknown>): void {
     if (_changedProperties.has('value')) {
       this.setFocusedDay(parseISODate(this.value) || new Date());
     }
     if (_changedProperties.has('localization')) {
       this.dateFormatShort = new Intl.DateTimeFormat(this.localization.locale, { day: 'numeric', month: 'long' });
-    }
-  }
-
-  // focus(options?: FocusOptions & { target: 'day' | 'month' }) {
-  focus(options?: Parameters<HTMLElement['focus']>[0] & { target: 'day' | 'month' }) {
-    const target = options?.target ?? 'day';
-
-    if (target === 'day') {
-      this.focusedDayNode.focus();
-    } else if (target === 'month') {
-      this.monthSelectNode.focus();
     }
   }
 
@@ -383,7 +382,7 @@ export class Calendar extends LitElement {
     this.enableActiveFocus();
   };
 
-  private handleDaySelect = (_event: MouseEvent, day: Date) => {
+  private handleDaySelect = (day: Date) => {
     const isInRange = inRange(day, parseISODate(this.min), parseISODate(this.max));
     const isAllowed = !this.isDateDisabled(day);
 

@@ -2,12 +2,10 @@ import { html, nothing } from 'lit';
 import { DatePickerLocalizedText } from './localization.js';
 
 type DatePickerInputProps = {
-  value: string;
   formattedValue: string;
   valueAsDate?: Date;
   localization: DatePickerLocalizedText;
   name: string;
-  identifier: string;
   disabled: boolean;
   required: boolean;
   dateFormatter: Intl.DateTimeFormat;
@@ -24,8 +22,6 @@ export function DatePickerInput({
   name,
   formattedValue,
   valueAsDate,
-  value,
-  identifier,
   disabled,
   required,
   onInput,
@@ -38,7 +34,6 @@ export function DatePickerInput({
         class="date-picker__input"
         .value=${formattedValue}
         placeholder=${localization.placeholder}
-        id=${identifier}
         ?disabled=${disabled}
         ?required=${required ? true : undefined}
         aria-autocomplete="none"
@@ -46,8 +41,8 @@ export function DatePickerInput({
         @focus=${onFocus}
         @blur=${onBlur}
         autocomplete="off"
+        name=${name}
       />
-      <input type="hidden" name=${name} .value=${value} />
       <button class="date-picker__toggle" @click=${onClick} ?disabled=${disabled} type="button">
         <span class="date-picker__toggle-icon">
           <svg aria-hidden="true" height="24" viewBox="0 0 21 21" width="24" xmlns="http://www.w3.org/2000/svg">

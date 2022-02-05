@@ -30,7 +30,6 @@ function cleanValue(input: HTMLInputElement, regex: RegExp): string {
 }
 
 const DISALLOWED_CHARACTERS = /[^0-9./-]+/g;
-const TRANSITION_MS = 300;
 
 export class DatePicker extends LitElement {
   static styles = style;
@@ -40,15 +39,6 @@ export class DatePicker extends LitElement {
   @query(`.date-picker__input`, true) private datePickerInput!: HTMLInputElement;
   @query(`.date-picker__close`, true) private closeButton!: HTMLButtonElement;
   @query(`date-calendar`, true) private calendar!: Calendar;
-  @query(`[role="dialog"]`, true) private dialogWrapperNode!: HTMLElement;
-
-  private inputId = 'input';
-  private dialogLabelId = 'dialog-label';
-
-  // private firstFocusableElement?: HTMLElement;
-  // private dialogWrapperNode?: HTMLElement;
-
-  private focusTimeoutId?: ReturnType<typeof setTimeout>;
 
   private initialTouchX = 0;
   private initialTouchY = 0;
@@ -64,9 +54,7 @@ export class DatePicker extends LitElement {
   private dateFormatLong!: Intl.DateTimeFormat;
 
   @state() activeFocus = false;
-
   @state() focusedDay = new Date();
-
   @state() open = false;
 
   /**
@@ -195,13 +183,9 @@ export class DatePicker extends LitElement {
     this.open = true;
     this.dispatchEvent(new CustomEvent('date-picker-open'));
 
-    // this.setFocusedDay(parseISODate(this.value) || new Date());
-
-    if (this.focusTimeoutId) {
-      clearTimeout(this.focusTimeoutId);
-    }
-
-    this.focusTimeoutId = setTimeout(() => this.calendar?.focus(), TRANSITION_MS);
+    // we need to wait for the element to become visible after next render,
+    // before we can move focus. it won't work otherwise
+    this.updateComplete.then(() => this.calendar.focus());
   }
 
   /**
@@ -212,15 +196,8 @@ export class DatePicker extends LitElement {
     this.open = false;
     this.dispatchEvent(new CustomEvent('date-picker-close'));
 
-    // in cases where calendar is quickly shown and hidden
-    // we should avoid moving focus to the button
-    if (this.focusTimeoutId) {
-      clearTimeout(this.focusTimeoutId);
-    }
-
     if (moveFocusToButton) {
-      // iOS VoiceOver needs to wait for all transitions to finish.
-      setTimeout(() => this.datePickerButton?.focus(), TRANSITION_MS + 200);
+      this.datePickerButton.focus();
     }
   }
 
@@ -333,7 +310,6 @@ export class DatePicker extends LitElement {
       <div class="date-picker">
         ${DatePickerInput({
           dateFormatter: this.dateFormatLong!,
-          value: this.value,
           valueAsDate,
           formattedValue: formattedDate,
           onInput: this.handleInputChange,
@@ -343,7 +319,6 @@ export class DatePicker extends LitElement {
           name: this.name,
           disabled: this.disabled,
           required: this.required,
-          identifier: this.inputId,
           localization: this.localization,
         })}
 
@@ -356,7 +331,7 @@ export class DatePicker extends LitElement {
           role="dialog"
           aria-modal="true"
           aria-hidden=${this.open ? 'false' : 'true'}
-          aria-labelledby=${this.dialogLabelId}
+          aria-labelledby="dialog-heading"
           @touchmove=${this.handleTouchMove}
           @touchstart=${this.handleTouchStart}
           @touchend=${this.handleTouchEnd}
@@ -365,7 +340,7 @@ export class DatePicker extends LitElement {
             <div tabindex="0" @focus=${this.focusLast}></div>
 
             <div class="date-picker__mobile">
-              <label class="date-picker__mobile-heading">${this.localization.calendarHeading}</label>
+              <div id="dialog-heading" class="date-picker__mobile-heading">${this.localization.calendarHeading}</div>
               <button class="date-picker__close" @click=${() => this.hide()} type="button">
                 <svg
                   aria-hidden="true"
