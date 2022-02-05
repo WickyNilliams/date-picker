@@ -103,6 +103,11 @@ export class DatePicker extends LitElement {
   @property({ attribute: false }) localization: DatePickerLocalizedText = en;
 
   /**
+   * Placeholder value for the input.
+   */
+  @property() placeholder: string = '';
+
+  /**
    * Date adapter, for custom parsing/formatting.
    * Must be object with a `parse` function which accepts a `string` and returns a `Date`,
    * and a `format` function which accepts a `Date` and returns a `string`.
