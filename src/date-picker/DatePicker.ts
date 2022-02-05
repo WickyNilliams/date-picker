@@ -312,7 +312,7 @@ export class DatePicker extends LitElement {
     `;
   }
 
-  private toggleOpen = (e: Event) => {
+  private toggleOpen(e: Event) {
     e.preventDefault();
 
     if (this.open) {
@@ -320,7 +320,7 @@ export class DatePicker extends LitElement {
     } else {
       this.show();
     }
-  };
+  }
 
   private handleDocumentClick = (e: MouseEvent) => {
     if (!this.open) {
@@ -334,33 +334,31 @@ export class DatePicker extends LitElement {
     }
   };
 
-  private handleEscKey = (event: KeyboardEvent) => {
+  private handleEscKey(event: KeyboardEvent) {
     if (event.keyCode === 27) {
       this.hide();
     }
-  };
+  }
 
-  private handleBlur = (event: Event) => {
+  private handleBlur(event: Event) {
     event.stopPropagation();
-
     this.dispatchEvent(new CustomEvent('date-picker-blur'));
-  };
+  }
 
-  private handleFocus = (event: Event) => {
+  private handleFocus(event: Event) {
     event.stopPropagation();
-
     this.dispatchEvent(new CustomEvent('date-picker-focus'));
-  };
+  }
 
-  private focusFirst = () => {
+  private focusFirst() {
     this.closeButton.focus();
-  };
+  }
 
-  private focusLast = () => {
+  private focusLast() {
     this.calendar.focus();
-  };
+  }
 
-  private handleInputChange = (e: Event) => {
+  private handleInputChange(e: Event) {
     const target = e.target as HTMLInputElement;
     const oldValue = this.value;
 
@@ -372,11 +370,11 @@ export class DatePicker extends LitElement {
     if (oldValue !== newValue) {
       this.dispatchEvent(new CustomEvent('date-picker-change'));
     }
-  };
+  }
 
-  private handleDaySelect = (event: CustomEvent<{ valueAsDate: Date }>) => {
+  private handleDaySelect(event: CustomEvent<{ valueAsDate: Date }>) {
     this.valueAsDate = event.detail.valueAsDate;
     this.dispatchEvent(new CustomEvent('date-picker-change'));
     this.hide();
-  };
+  }
 }

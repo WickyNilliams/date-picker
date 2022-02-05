@@ -260,13 +260,13 @@ export class Calendar extends LitElement {
     `;
   }
 
-  private enableActiveFocus = () => {
+  private enableActiveFocus() {
     this.activeFocus = true;
-  };
+  }
 
-  private disableActiveFocus = () => {
+  private disableActiveFocus() {
     this.activeFocus = false;
-  };
+  }
 
   private addDays(days: number) {
     this.setFocusedDay(addDays(this.focusedDay, days));
@@ -308,17 +308,17 @@ export class Calendar extends LitElement {
     this.focusedDay = clamp(day, parseISODate(this.min), parseISODate(this.max));
   }
 
-  private handleNextMonthClick = (event: MouseEvent) => {
+  private handleNextMonthClick(event: MouseEvent) {
     event.preventDefault();
     this.addMonths(1);
-  };
+  }
 
-  private handlePreviousMonthClick = (event: MouseEvent) => {
+  private handlePreviousMonthClick(event: MouseEvent) {
     event.preventDefault();
     this.addMonths(-1);
-  };
+  }
 
-  private handleKeyboardNavigation = (event: KeyboardEvent) => {
+  private handleKeyboardNavigation(event: KeyboardEvent) {
     const { isLTR } = this.direction;
 
     switch (event.keyCode) {
@@ -360,9 +360,9 @@ export class Calendar extends LitElement {
 
     event.preventDefault();
     this.enableActiveFocus();
-  };
+  }
 
-  private handleDaySelect = (day: Date) => {
+  private handleDaySelect(day: Date) {
     const isInRange = dateInRange(day, parseISODate(this.min), parseISODate(this.max));
     const isAllowed = !this.isDateDisabled(day);
 
@@ -373,17 +373,17 @@ export class Calendar extends LitElement {
       // user has selected a day that has been specifically disallowed
       this.setFocusedDay(day);
     }
-  };
+  }
 
-  private handleMonthSelect = (e: Event) => {
+  private handleMonthSelect(e: Event) {
     const select = e.target as HTMLSelectElement;
     this.setMonth(parseInt(select.value, 10));
-  };
+  }
 
-  private handleYearSelect = (e: Event) => {
+  private handleYearSelect(e: Event) {
     const select = e.target as HTMLSelectElement;
     this.setYear(parseInt(select.value, 10));
-  };
+  }
 
   private setValue(date?: Date) {
     this.value = date ? printISODate(date) : '';
