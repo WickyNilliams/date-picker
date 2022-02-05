@@ -2,8 +2,8 @@ import { css } from 'lit';
 
 export const style = css`
   /* ---------------------------------------------
-  // CALENDAR __ TABLE
-  // --------------------------------------------*/
+  // TABLE
+  // -------------------------------------------- */
 
   table {
     border-collapse: collapse;
@@ -133,7 +133,7 @@ export const style = css`
   }
 
   /* ---------------------------------------------
-  // CALENDAR __ HEADER
+  // HEADER
   // --------------------------------------------*/
 
   .header {
@@ -145,15 +145,14 @@ export const style = css`
   }
 
   /* ---------------------------------------------
-  // CALENDAR __ NAVIGATION
+  // NAVIGATION
   // --------------------------------------------*/
 
   .nav {
     white-space: nowrap;
   }
 
-  .prev,
-  .next {
+  .nav button {
     -moz-appearance: none;
     -webkit-appearance: none;
     align-items: center;
@@ -173,47 +172,40 @@ export const style = css`
   }
 
   @media (max-width: 35.9375em) {
-    .prev,
-    .next {
+    .nav button {
       height: 40px;
       width: 40px;
     }
   }
 
-  .prev:focus,
-  .next:focus {
+  .nav button:focus {
     box-shadow: 0 0 0 2px var(--date-picker-color-primary);
     outline: 0;
   }
 
-  .prev:active:focus,
-  .next:active:focus {
-    box-shadow: none;
-  }
-
-  .prev:disabled,
-  .next:disabled {
+  .nav button:disabled {
     cursor: default;
     opacity: 0.5;
   }
 
-  .prev svg,
-  .next svg {
+  .nav button:active:focus {
+    box-shadow: none;
+  }
+
+  .nav svg {
+    height: 21px;
+    width: 21px;
     margin: 0 auto;
   }
 
   /* ---------------------------------------------
-  // CALENDAR __ SELECT
+  // SELECT
   // --------------------------------------------*/
 
   .select {
     display: inline-flex;
     margin-top: 4px;
     position: relative;
-  }
-
-  .select span {
-    margin-right: 4px;
   }
 
   .select select {
@@ -226,10 +218,6 @@ export const style = css`
     top: 0;
     width: 100%;
     z-index: 2;
-  }
-
-  .select select:focus + .select-label {
-    box-shadow: 0 0 0 2px var(--date-picker-color-primary);
   }
 
   .select-label {
@@ -247,13 +235,21 @@ export const style = css`
     z-index: 1;
   }
 
+  .select-label span {
+    margin-right: 4px;
+  }
+
   .select-label svg {
     width: 16px;
     height: 16px;
   }
 
+  .select select:focus + .select-label {
+    box-shadow: 0 0 0 2px var(--date-picker-color-primary);
+  }
+
   /* ---------------------------------------------
-  // CALENDAR __ VISUALLY HIDDEN
+  // VISUALLY HIDDEN
   // --------------------------------------------*/
 
   .v-hidden {

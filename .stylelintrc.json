@@ -1,0 +1,20 @@
+{
+  "customSyntax": "postcss-lit",
+  "extends": ["stylelint-config-standard"],
+  "rules": {
+    "comment-whitespace-inside": null,
+    "property-no-vendor-prefix": [
+      true,
+      {
+        "ignoreProperties": ["appearance", "user-select"]
+      }
+    ],
+    "selector-no-vendor-prefix": [
+      true,
+      {
+        "ignoreSelectors": ["::-webkit-input-placeholder", ":-moz-placeholder", ":-ms-input-placeholder"]
+      }
+    ],
+    "string-quotes": "single"
+  }
+}

@@ -8,7 +8,6 @@ export const style = css`
   :host {
     display: block;
     color: var(--date-picker-color-text);
-    display: block;
     font-family: var(--date-picker-font);
     margin: 0;
     position: relative;
@@ -83,7 +82,7 @@ export const style = css`
     border-radius: 0;
     border-bottom-right-radius: var(--date-picker-radius);
     border-top-right-radius: var(--date-picker-radius);
-    box-shadow: inset 1px 0 0 rgba(0, 0, 0, 0.1);
+    box-shadow: inset 1px 0 0 rgb(0 0 0 / 10%);
     color: var(--date-picker-color-text);
     cursor: pointer;
     display: flex;
@@ -161,9 +160,9 @@ export const style = css`
 
   .dialog-content {
     background: var(--date-picker-color-surface);
-    border: 1px solid rgba(0, 0, 0, 0.1);
+    border: 1px solid rgb(0 0 0 / 10%);
     border-radius: var(--date-picker-radius);
-    box-shadow: 0 4px 10px 0 rgba(0, 0, 0, 0.1);
+    box-shadow: 0 4px 10px 0 rgb(0 0 0 / 10%);
     margin-left: auto;
     margin-top: 8px;
     max-width: 310px;
@@ -208,7 +207,7 @@ export const style = css`
 
   .mobile {
     align-items: center;
-    border-bottom: 1px solid rgba(0, 0, 0, 0.12);
+    border-bottom: 1px solid rgb(0 0 0 / 12%);
     display: flex;
     justify-content: space-between;
     margin-bottom: 20px;
@@ -276,6 +275,7 @@ export const style = css`
     .close {
       opacity: 0;
     }
+
     .close:focus {
       opacity: 1;
     }

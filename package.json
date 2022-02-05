@@ -38,7 +38,10 @@
     "eslint-config-prettier": "^8.3.0",
     "husky": "^4.3.8",
     "lint-staged": "^10.5.4",
+    "postcss-lit": "^0.4.3",
     "prettier": "^2.3.2",
+    "stylelint": "^14.3.0",
+    "stylelint-config-standard": "^24.0.0",
     "tslib": "^2.3.1",
     "typescript": "^4.5.5"
   },

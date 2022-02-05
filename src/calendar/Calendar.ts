@@ -195,12 +195,12 @@ export class Calendar extends LitElement {
         </div>
 
         <div class="nav">
-          <button class="prev" @click=${this.handlePreviousMonthClick} ?disabled=${prevMonthDisabled} type="button">
+          <button @click=${this.handlePreviousMonthClick} ?disabled=${prevMonthDisabled} type="button">
             ${prevMonth}
             <span class="v-hidden">${this.localization.prevMonthLabel}</span>
           </button>
 
-          <button class="next" @click=${this.handleNextMonthClick} ?disabled=${nextMonthDisabled} type="button">
+          <button @click=${this.handleNextMonthClick} ?disabled=${nextMonthDisabled} type="button">
             ${nextMonth}
             <span class="v-hidden">${this.localization.nextMonthLabel}</span>
           </button>
