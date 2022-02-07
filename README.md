@@ -8,7 +8,7 @@ Todo:
 
 - [x] Convert to Lit and use Shadow DOM
 - [x] Add support for formdata event
-- [ ] Port test suite to web-test-runner/mocha
+- [ ] Port test suite to web-test-runner and mocha
 - [x] Extract calendar component
 - [x] RTL support
 - [ ] Perhaps support slotting your own input?
@@ -21,12 +21,13 @@ Todo:
 - [ ] date range component?
 - [ ] readonly
 - [ ] track bundle size
+- [ ] configurable short day names? looks like there's a lot of variation and substring(2) might be bad e.g: https://www.ema.europa.eu/en/documents/other/abbreviation-names-days-calendarised-blisters_en.pdf
+- [ ] docs!
+- [ ] css parts
 
 ## Installation
 
-```bash
-npm i @wickynilliams/date-picker
-```
+Still under development, not yet available on npm!
 
 ## Usage
 
