@@ -220,6 +220,11 @@ export class DatePicker extends LitElement {
         year: 'numeric',
       });
     }
+
+    // TODO: fix! this is not nice
+    if (changedProperties.has('dateAdapter')) {
+      this.value = this.getAttribute('value') || '';
+    }
   }
 
   /**

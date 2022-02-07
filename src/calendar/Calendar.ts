@@ -198,12 +198,12 @@ export class Calendar extends LitElement {
         </div>
 
         <div class="nav">
-          <button @click=${this.handlePreviousMonthClick} ?disabled=${prevMonthDisabled} type="button">
+          <button class="prev" @click=${this.handlePreviousMonthClick} ?disabled=${prevMonthDisabled} type="button">
             ${this.direction.isLTR ? leftChevron : rightChevron}
             <span class="v-hidden">${this.localization.prevMonthLabel}</span>
           </button>
 
-          <button @click=${this.handleNextMonthClick} ?disabled=${nextMonthDisabled} type="button">
+          <button class="next" @click=${this.handleNextMonthClick} ?disabled=${nextMonthDisabled} type="button">
             ${this.direction.isLTR ? rightChevron : leftChevron}
             <span class="v-hidden">${this.localization.nextMonthLabel}</span>
           </button>
