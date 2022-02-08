@@ -113,11 +113,12 @@ type DatePickerProps = {
   min: string;
   max: string;
   value: string;
-  onChange: EventListener;
-  onClose: EventListener;
-  onOpen: EventListener;
-  onBlur: EventListener;
-  onFocus: EventListener;
+  onBlur: (e: Event) => void;
+  onFocus: (e: Event) => void;
+  onChange: (e: Event) => void;
+  onInput: (e: Event) => void;
+  onOpen: (e: Event) => void;
+  onClose: (e: Event) => void;
 };
 
 const createFixture = async ({
