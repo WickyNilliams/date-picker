@@ -8,7 +8,7 @@ Todo:
 
 - [x] Convert to Lit and use Shadow DOM
 - [x] Add support for formdata event
-- [ ] Port test suite to web-test-runner and mocha
+- [x] Port test suite to web-test-runner and mocha
 - [x] Extract calendar component
 - [x] RTL support
 - [ ] Perhaps support slotting your own input?
