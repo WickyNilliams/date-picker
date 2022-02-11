@@ -1,5 +1,10 @@
 {
-  "customSyntax": "postcss-lit",
+  "overrides": [
+    {
+      "files": ["**/*.css.ts"],
+      "customSyntax": "postcss-lit"
+    }
+  ],
   "extends": ["stylelint-config-standard"],
   "plugins": ["stylelint-use-logical-spec"],
   "rules": {
@@ -17,6 +22,9 @@
       }
     ],
     "string-quotes": "single",
+    "value-keyword-case": null,
+    "color-function-notation": null,
+    "alpha-value-notation": null,
     "liberty/use-logical-spec": true
   }
 }

@@ -1,4 +1,5 @@
 :root {
+  /* colors */
   --date-picker-color-primary: #005fcc;
   --date-picker-color-text: #333;
   --date-picker-color-text-active: #fff;
@@ -8,10 +9,12 @@
   --date-picker-color-overlay: rgba(0, 0, 0, 0.8);
   --date-picker-color-border: #333;
 
+  /* fonts */
   --date-picker-font: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
   --date-picker-font-normal: 400;
   --date-picker-font-bold: 600;
 
+  /* misc */
   --date-picker-radius: 4px;
   --date-picker-z-index: 600;
 }
