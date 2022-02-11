@@ -11,19 +11,21 @@ Todo:
 - [x] Port test suite to web-test-runner and mocha
 - [x] Extract calendar component
 - [x] RTL support
-- [ ] Perhaps support slotting your own input?
-- [ ] Decide on project/tag name
 - [x] add `valueAsDate` property
 - [x] add `valueAsNumber` property
 - [x] add `validity` property
 - [x] simplify user parsing/formatting. named capture groups for parse? format string?
 - [x] configurable disallowed chars
+- [ ] month component
+- [ ] imperative API?
+- [ ] Perhaps support slotting your own input?
 - [ ] date range component?
-- [ ] readonly
+- [ ] date picker readonly
+- [ ] css parts
+- [ ] Decide on project/tag name
 - [ ] track bundle size
 - [ ] configurable short day names? looks like there's a lot of variation and substring(2) might be bad e.g: https://www.ema.europa.eu/en/documents/other/abbreviation-names-days-calendarised-blisters_en.pdf
 - [ ] docs!
-- [ ] css parts
 
 ## Installation
 
